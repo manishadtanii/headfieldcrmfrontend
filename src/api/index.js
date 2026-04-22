@@ -92,6 +92,16 @@ export const baAPI = {
   createInstruction:  (slug, text, pin) => api.post(`/b/${slug}/instructions`, { text, isPinned: !!pin }),
   togglePinInstruction: (slug, id)      => api.patch(`/b/${slug}/instructions/${id}/pin`),
   deleteInstruction:  (slug, id)        => api.delete(`/b/${slug}/instructions/${id}`),
+
+  // ── Notifications ─────────────────────────────────────────────
+  getNotifications:  (slug)  => api.get(`/b/${slug}/notifications`),
+  getUnreadCount:    (slug)  => api.get(`/b/${slug}/notifications/unread-count`),
+  markAllRead:       (slug)  => api.patch(`/b/${slug}/notifications/read-all`),
+  markOneRead:       (slug, id) => api.patch(`/b/${slug}/notifications/${id}/read`),
+
+  // ── Web-to-Lead API Key ───────────────────────────────────────
+  getApiKey:       (slug) => api.get(`/b/${slug}/api-key`),
+  generateApiKey:  (slug) => api.post(`/b/${slug}/generate-api-key`),
 };
 
 // ── Employee APIs — /api/b/:slug/* ───────────────────────────────
@@ -111,7 +121,10 @@ export const empAPI = {
 
   // Instructions (read only)
   getInstructions: (slug) => api.get(`/b/${slug}/instructions`),
+
+  // ── Notifications (same endpoints, different role) ────────────
+  getNotifications: (slug)     => api.get(`/b/${slug}/notifications`),
+  getUnreadCount:   (slug)     => api.get(`/b/${slug}/notifications/unread-count`),
+  markAllRead:      (slug)     => api.patch(`/b/${slug}/notifications/read-all`),
+  markOneRead:      (slug, id) => api.patch(`/b/${slug}/notifications/${id}/read`),
 };
-
-
-

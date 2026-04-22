@@ -1,6 +1,8 @@
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
 import { LayoutDashboard, ClipboardList, User, LogOut, Briefcase } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { empAPI } from '../api';
+import NotificationBell from '../components/NotificationBell';
 
 export default function EmployeeLayout() {
   const { user, logout } = useAuth();
@@ -62,6 +64,13 @@ export default function EmployeeLayout() {
       </aside>
 
       <main className="main-content">
+        {/* Top bar with bell */}
+        <div style={{
+          display: 'flex', justifyContent: 'flex-end',
+          padding: '12px 24px 0',
+        }}>
+          <NotificationBell apiObj={empAPI} />
+        </div>
         <Outlet />
       </main>
     </div>

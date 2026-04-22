@@ -1,6 +1,8 @@
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
 import { LayoutDashboard, Users, ClipboardList, BarChart2, Settings, LogOut, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { baAPI } from '../api';
+import NotificationBell from '../components/NotificationBell';
 
 export default function BusinessLayout() {
   const { user, logout } = useAuth();
@@ -73,6 +75,13 @@ export default function BusinessLayout() {
 
       {/* Main */}
       <main className="main-content">
+        {/* Top bar with bell */}
+        <div style={{
+          display: 'flex', justifyContent: 'flex-end',
+          padding: '12px 24px 0',
+        }}>
+          <NotificationBell apiObj={baAPI} />
+        </div>
         <Outlet />
       </main>
     </div>
