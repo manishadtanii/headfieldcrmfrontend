@@ -63,7 +63,8 @@ export default function BASettings() {
     try {
       await authAPI.changePassword({
         currentPassword: pwForm.current,
-        newPassword: pwForm.newPw,
+        newPassword:     pwForm.newPw,
+        confirmPassword: pwForm.confirm,   // ← backend needs this
       });
       toast.success('Password changed successfully!');
       setPwForm({ current: '', newPw: '', confirm: '' });
