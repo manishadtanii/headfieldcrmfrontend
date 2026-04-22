@@ -1,6 +1,6 @@
 import api from './axios';
 
-// Auth APIs
+// ── Auth APIs ─────────────────────────────────────────────────────
 export const authAPI = {
   login: (data) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
@@ -11,7 +11,7 @@ export const authAPI = {
   heartbeat: () => api.post('/auth/heartbeat'),
 };
 
-// Super Admin — Business APIs
+// ── Super Admin — Business APIs ───────────────────────────────────
 export const adminBusinessAPI = {
   getAll: (params) => api.get('/admin/businesses', { params }),
   getById: (id) => api.get(`/admin/businesses/${id}`),
@@ -21,7 +21,7 @@ export const adminBusinessAPI = {
   delete: (id) => api.delete(`/admin/businesses/${id}`),
 };
 
-// Super Admin — User APIs
+// ── Super Admin — User APIs ───────────────────────────────────────
 export const adminUserAPI = {
   getAll: (params) => api.get('/admin/users', { params }),
   getById: (id) => api.get(`/admin/users/${id}`),
@@ -32,13 +32,13 @@ export const adminUserAPI = {
   resetPassword: (id) => api.post(`/admin/users/${id}/reset-password`),
 };
 
-// Super Admin — Analytics APIs
+// ── Super Admin — Analytics APIs ──────────────────────────────────
 export const adminAnalyticsAPI = {
   getStats: () => api.get('/admin/stats'),
   getSessions: (params) => api.get('/admin/sessions', { params }),
 };
 
-// Business Admin APIs — /api/b/:slug/*
+// ── Business Admin APIs — /api/b/:slug/* ─────────────────────────
 export const baAPI = {
   // Dashboard
   getOverview: (slug) => api.get(`/b/${slug}/overview`),
@@ -49,4 +49,56 @@ export const baAPI = {
   toggleEmployee: (slug, id) => api.patch(`/b/${slug}/employees/${id}/toggle`),
   forceLogoutEmployee: (slug, id) => api.post(`/b/${slug}/employees/${id}/force-logout`),
   resetEmployeePassword: (slug, id) => api.post(`/b/${slug}/employees/${id}/reset-password`),
+
+  // Lead management (Business Admin side)
+  getLeads: (slug, params) => api.get(`/b/${slug}/leads`, { params }),
+  getLead: (slug, id) => api.get(`/b/${slug}/leads/${id}`),
+  createLead: (slug, data) => api.post(`/b/${slug}/leads`, data),
+  updateLead: (slug, id, data) => api.put(`/b/${slug}/leads/${id}`, data),
+  deleteLead: (slug, id) => api.delete(`/b/${slug}/leads/${id}`),
+
+  // Excel import — multipart/form-data
+  importLeads: (slug, file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post(`/b/${slug}/leads/import`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  // Assignment
+  assignLead: (slug, id, employeeId) =>
+    api.post(`/b/${slug}/leads/${id}/assign`, { employeeId }),
+
+  bulkAssign: (slug, payload) =>
+    api.post(`/b/${slug}/leads/bulk-assign`, payload),
+  // payload options:
+  //  { leadIds, employeeId }           ← specific IDs
+  //  { fromRow, toRow, employeeId, batchId? } ← range
+  //  { assignAll: true, employeeIds }  ← auto distribute
+
+  // Notes
+  addNote: (slug, id, text) => api.post(`/b/${slug}/leads/${id}/notes`, { text }),
+
+  // Overview / analytics
+  getLeadOverview: (slug) => api.get(`/b/${slug}/leads/overview`),
+
+  // Export (returns blob)
+  exportLeads: (slug, params) =>
+    api.get(`/b/${slug}/leads/export`, { params, responseType: 'blob' }),
 };
+
+// ── Employee APIs — /api/b/:slug/leads/my/* ───────────────────────
+export const empAPI = {
+  // My leads
+  getMyLeads: (slug, params) => api.get(`/b/${slug}/leads/my/leads`, { params }),
+  updateStatus: (slug, id, status) =>
+    api.patch(`/b/${slug}/leads/my/${id}/status`, { status }),
+
+  // Notes
+  getNotes:   (slug, id)       => api.get(`/b/${slug}/leads/my/${id}/notes`),
+  addNote:    (slug, id, text) => api.post(`/b/${slug}/leads/my/${id}/notes`, { text }),
+  deleteNote: (slug, id, noteId) => api.delete(`/b/${slug}/leads/my/${id}/notes/${noteId}`),
+};
+
+

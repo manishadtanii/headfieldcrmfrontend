@@ -9,79 +9,72 @@ import ChangePassword from './pages/auth/ChangePassword';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 
-// Super Admin Pages
+// Super Admin
 import SuperAdminLayout from './layouts/SuperAdminLayout';
 import SADashboard from './pages/super-admin/Dashboard';
 import SABusinesses from './pages/super-admin/Businesses';
 import SAUsers from './pages/super-admin/Users';
 import SASessions from './pages/super-admin/Sessions';
 
-// Business Admin Pages
+// Business Admin
 import BusinessLayout from './layouts/BusinessLayout';
 import BADashboard from './pages/business-admin/Dashboard';
 import BAEmployees from './pages/business-admin/Employees';
+import BALeads from './pages/business-admin/Leads';
+import BALeadOverview from './pages/business-admin/LeadOverview';
 
-// Employee Pages
+// Employee
 import EmployeeLayout from './layouts/EmployeeLayout';
 import EmpDashboard from './pages/employee/Dashboard';
+import EmpMyLeads from './pages/employee/MyLeads';
 
-// ── Protected Route Wrapper ──────────────────
+// ── Protected Route ─────────────────────────────
 const ProtectedRoute = ({ children, allowedRoles, slugParam }) => {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) return <div className="loading-screen"><div className="spinner" /></div>;
 
   if (!isAuthenticated) {
-    // Redirect to the right login page
     if (slugParam) return <Navigate to={`/${slugParam}/login`} replace />;
     return <Navigate to="/admin/login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    // Redirect to correct dashboard based on actual role
     if (user?.role === 'superAdmin') return <Navigate to="/admin/dashboard" replace />;
     if (user?.role === 'businessAdmin') return <Navigate to={`/${user?.business?.slug}/dashboard`} replace />;
-    if (user?.role === 'employee') return <Navigate to={`/${user?.business?.slug}/emp/my-leads`} replace />;
+    if (user?.role === 'employee') return <Navigate to={`/${user?.business?.slug}/emp/dashboard`} replace />;
   }
 
   return children;
 };
 
-// ── First Login Guard ────────────────────────
+// ── First Login Guard ────────────────────────────
 const FirstLoginGuard = ({ children }) => {
   const { user } = useAuth();
   if (user?.isFirstLogin) return <Navigate to="/change-password" replace />;
   return children;
 };
 
-// ── App Routes ───────────────────────────────
+// ── App Routes ────────────────────────────────────
 const AppRoutes = () => {
-  const { user } = useAuth();
-
   return (
     <Routes>
-      {/* ── Auth Routes ── */}
+      {/* ── Auth ── */}
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/:slug/login" element={<BusinessLogin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route
         path="/change-password"
-        element={
-          <ProtectedRoute>
-            <ChangePassword />
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute><ChangePassword /></ProtectedRoute>}
       />
 
-      {/* ── Super Admin Routes ── */}
+      {/* ── Super Admin ── */}
       <Route
         path="/admin"
         element={
           <ProtectedRoute allowedRoles={['superAdmin']}>
-            <FirstLoginGuard>
-              <SuperAdminLayout />
-            </FirstLoginGuard>
+            <FirstLoginGuard><SuperAdminLayout /></FirstLoginGuard>
           </ProtectedRoute>
         }
       >
@@ -92,44 +85,46 @@ const AppRoutes = () => {
         <Route path="sessions" element={<SASessions />} />
       </Route>
 
-      {/* ── Business Admin Routes ── */}
+      {/* ── Business Admin ── */}
       <Route
         path="/:slug"
         element={
-          <ProtectedRoute allowedRoles={['businessAdmin']} slugParam={window.location.pathname.split('/')[1]}>
-            <FirstLoginGuard>
-              <BusinessLayout />
-            </FirstLoginGuard>
+          <ProtectedRoute
+            allowedRoles={['businessAdmin']}
+            slugParam={window.location.pathname.split('/')[1]}
+          >
+            <FirstLoginGuard><BusinessLayout /></FirstLoginGuard>
           </ProtectedRoute>
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<BADashboard />} />
         <Route path="employees" element={<BAEmployees />} />
+        <Route path="leads" element={<BALeads />} />
+        <Route path="lead-overview" element={<BALeadOverview />} />
       </Route>
 
-      {/* ── Employee Routes ── */}
+      {/* ── Employee ── */}
       <Route
         path="/:slug/emp"
         element={
           <ProtectedRoute allowedRoles={['employee']}>
-            <FirstLoginGuard>
-              <EmployeeLayout />
-            </FirstLoginGuard>
+            <FirstLoginGuard><EmployeeLayout /></FirstLoginGuard>
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="my-leads" replace />} />
-        <Route path="my-leads" element={<EmpDashboard />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<EmpDashboard />} />
+        <Route path="my-leads" element={<EmpMyLeads />} />
       </Route>
 
-      {/* ── Default Redirect ── */}
+      {/* ── Default ── */}
       <Route path="/" element={<Navigate to="/admin/login" replace />} />
     </Routes>
   );
 };
 
-// ── Root App ─────────────────────────────────
+// ── Root App ──────────────────────────────────────
 export default function App() {
   return (
     <BrowserRouter>

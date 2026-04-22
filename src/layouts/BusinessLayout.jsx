@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, Settings, LogOut, Building2 } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, BarChart2, Settings, LogOut, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function BusinessLayout() {
@@ -10,7 +10,8 @@ export default function BusinessLayout() {
   const navItems = [
     { to: `/${slug}/dashboard`, icon: LayoutDashboard, label: 'Dashboard' },
     { to: `/${slug}/employees`, icon: Users, label: 'Employees' },
-    { to: `/${slug}/leads`, icon: ClipboardList, label: 'Leads', disabled: true },
+    { to: `/${slug}/leads`, icon: ClipboardList, label: 'Leads' },
+    { to: `/${slug}/lead-overview`, icon: BarChart2, label: 'Lead Overview' },
     { to: `/${slug}/settings`, icon: Settings, label: 'Settings', disabled: true },
   ];
 
