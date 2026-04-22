@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Search, RefreshCw, ChevronLeft, ChevronRight,
   MessageSquarePlus, X, Trash2, Send, StickyNote,
@@ -204,6 +204,7 @@ function NotesDrawer({ lead, slug, onClose }) {
 // ── Main Page ────────────────────────────────────────────────────
 export default function MyLeads() {
   const { slug } = useParams();
+  const navigate = useNavigate();
 
   const [leads, setLeads]           = useState([]);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
@@ -335,7 +336,13 @@ export default function MyLeads() {
                       <tr key={lead._id}>
                         <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{rowNum}</td>
                         <td>
-                          <div style={{ fontWeight: 600, fontSize: 13 }}>{lead.name}</div>
+                          <div
+                            style={{ fontWeight: 600, fontSize: 13, cursor: 'pointer', color: 'var(--primary-light)' }}
+                            onClick={() => navigate(`/${slug}/emp/my-leads/${lead._id}`, { state: { lead } })}
+                            title="View Lead Detail"
+                          >
+                            {lead.name}
+                          </div>
                           {lead.email && (
                             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{lead.email}</div>
                           )}

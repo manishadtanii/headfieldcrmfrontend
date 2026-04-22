@@ -50,6 +50,33 @@ const CredentialsBox = ({ creds, onClose }) => (
   </div>
 );
 
+// ── Password Reveal Cell ──────────────────────
+const PasswordCell = ({ password }) => {
+  const [show, setShow] = useState(false);
+  if (!password) return <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ fontFamily: 'monospace', fontSize: 12, letterSpacing: 1 }}>
+        {show ? password : '••••••••'}
+      </span>
+      <button
+        className="btn btn-ghost btn-icon" style={{ padding: 3 }}
+        title={show ? 'Hide' : 'Show'}
+        onClick={() => setShow(s => !s)}
+      >
+        <Eye size={12} />
+      </button>
+      <button
+        className="btn btn-ghost btn-icon" style={{ padding: 3 }}
+        title="Copy password"
+        onClick={() => { navigator.clipboard.writeText(password); toast.success('Password copied!'); }}
+      >
+        <Copy size={12} />
+      </button>
+    </div>
+  );
+};
+
 // ── Create User Modal ──────────────────────
 const CreateUserModal = ({ onClose, onCreated }) => {
   const [form, setForm] = useState({ name: '', email: '', role: 'businessAdmin', businessId: '' });
@@ -162,7 +189,7 @@ export default function SAUsers() {
 
   const handleToggle = async (user) => {
     try {
-      const res = await adminUserAPI.toggle(user.id);
+      const res = await adminUserAPI.toggle(user._id);
       toast.success(res.data.message);
       fetchUsers();
     } catch (err) {
@@ -173,7 +200,7 @@ export default function SAUsers() {
   const handleForceLogout = async (user) => {
     if (!confirm(`Force logout ${user.name}?`)) return;
     try {
-      const res = await adminUserAPI.forceLogout(user.id);
+      const res = await adminUserAPI.forceLogout(user._id);
       toast.success(res.data.message);
       fetchUsers();
     } catch (err) {
@@ -184,9 +211,10 @@ export default function SAUsers() {
   const handleResetPW = async (user) => {
     if (!confirm(`Reset password for ${user.name}? A new temp password will be generated.`)) return;
     try {
-      const res = await adminUserAPI.resetPassword(user.id);
+      const res = await adminUserAPI.resetPassword(user._id);
       toast.success('Password reset!');
       setCredentials(res.data.credentials);
+      fetchUsers(); // refresh to show new tempPassword
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed.');
     }
@@ -236,6 +264,7 @@ export default function SAUsers() {
               <th>User</th>
               <th>Role</th>
               <th>Business</th>
+              <th>Password</th>
               <th>Status</th>
               <th>Online</th>
               <th>Last Login</th>
@@ -257,7 +286,7 @@ export default function SAUsers() {
             ) : users.map(user => {
               const rc = roleColors[user.role] || {};
               return (
-                <tr key={user.id}>
+                <tr key={user._id}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
@@ -276,11 +305,6 @@ export default function SAUsers() {
                     <span className="badge" style={{ background: rc.bg, color: rc.color }}>
                       {rc.label}
                     </span>
-                    {user.isFirstLogin && (
-                      <span className="badge badge-warning" style={{ marginLeft: 6, fontSize: 10 }}>
-                        First Login
-                      </span>
-                    )}
                   </td>
                   <td style={{ fontSize: 13 }}>
                     {user.business ? (
@@ -290,6 +314,12 @@ export default function SAUsers() {
                       </>
                     ) : '—'}
                   </td>
+
+                  {/* Password cell */}
+                  <td>
+                    <PasswordCell password={user.tempPassword} />
+                  </td>
+
                   <td>
                     <span className={`badge ${user.isActive ? 'badge-success' : 'badge-danger'}`}>
                       {user.isActive ? 'Active' : 'Inactive'}
@@ -311,12 +341,10 @@ export default function SAUsers() {
                   </td>
                   <td>
                     <div className="flex gap-2">
-                      {/* Toggle Active */}
                       <button className="btn btn-ghost btn-icon btn-sm" title={user.isActive ? 'Deactivate' : 'Activate'}
                         onClick={() => handleToggle(user)}>
                         {user.isActive ? <ToggleRight size={16} color="var(--success)" /> : <ToggleLeft size={16} />}
                       </button>
-                      {/* Force Logout */}
                       {user.isOnline && (
                         <button className="btn btn-ghost btn-icon btn-sm" title="Force Logout"
                           onClick={() => handleForceLogout(user)}
@@ -324,7 +352,6 @@ export default function SAUsers() {
                           <LogOut size={14} />
                         </button>
                       )}
-                      {/* Reset PW */}
                       <button className="btn btn-ghost btn-icon btn-sm" title="Reset Password"
                         onClick={() => handleResetPW(user)}
                         style={{ color: 'var(--info)' }}>

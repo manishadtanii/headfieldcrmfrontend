@@ -9,8 +9,8 @@ export default function EmployeeLayout() {
 
   const navItems = [
     { to: `/${slug}/emp/dashboard`, icon: LayoutDashboard, label: 'Dashboard' },
-    { to: `/${slug}/emp/my-leads`, icon: ClipboardList, label: 'My Leads' },
-    { to: `/${slug}/emp/profile`, icon: User, label: 'My Profile', disabled: true },
+    { to: `/${slug}/emp/my-leads`,  icon: ClipboardList,   label: 'My Leads'  },
+    { to: `/${slug}/emp/profile`,   icon: User,            label: 'My Profile' },
   ];
 
   const handleLogout = async () => {
@@ -33,29 +33,16 @@ export default function EmployeeLayout() {
 
         <nav className="sidebar-nav">
           <div className="nav-section-label">My Workspace</div>
-          {navItems.map(({ to, icon: Icon, label, disabled }) =>
-            disabled ? (
-              <div
-                key={to}
-                className="nav-item"
-                style={{ opacity: 0.4, cursor: 'not-allowed' }}
-                title="Coming soon"
-              >
-                <Icon size={18} />
-                {label}
-                <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)' }}>Soon</span>
-              </div>
-            ) : (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-              >
-                <Icon size={18} />
-                {label}
-              </NavLink>
-            )
-          )}
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            >
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="sidebar-footer">

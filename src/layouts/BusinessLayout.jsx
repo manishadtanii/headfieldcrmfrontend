@@ -8,11 +8,11 @@ export default function BusinessLayout() {
   const navigate = useNavigate();
 
   const navItems = [
-    { to: `/${slug}/dashboard`, icon: LayoutDashboard, label: 'Dashboard' },
-    { to: `/${slug}/employees`, icon: Users, label: 'Employees' },
-    { to: `/${slug}/leads`, icon: ClipboardList, label: 'Leads' },
-    { to: `/${slug}/lead-overview`, icon: BarChart2, label: 'Lead Overview' },
-    { to: `/${slug}/settings`, icon: Settings, label: 'Settings', disabled: true },
+    { to: `/${slug}/dashboard`,     icon: LayoutDashboard, label: 'Dashboard'     },
+    { to: `/${slug}/employees`,     icon: Users,           label: 'Employees'     },
+    { to: `/${slug}/leads`,         icon: ClipboardList,   label: 'Leads'         },
+    { to: `/${slug}/lead-overview`, icon: BarChart2,       label: 'Lead Overview' },
+    { to: `/${slug}/settings`,      icon: Settings,        label: 'Settings'      },
   ];
 
   const handleLogout = async () => {
@@ -38,29 +38,16 @@ export default function BusinessLayout() {
         {/* Nav */}
         <nav className="sidebar-nav">
           <div className="nav-section-label">Main Menu</div>
-          {navItems.map(({ to, icon: Icon, label, disabled }) =>
-            disabled ? (
-              <div
-                key={to}
-                className="nav-item"
-                style={{ opacity: 0.4, cursor: 'not-allowed' }}
-                title="Coming soon"
-              >
-                <Icon size={18} />
-                {label}
-                <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)' }}>Soon</span>
-              </div>
-            ) : (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-              >
-                <Icon size={18} />
-                {label}
-              </NavLink>
-            )
-          )}
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            >
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
         </nav>
 
         {/* User Card */}

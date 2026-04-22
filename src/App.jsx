@@ -22,11 +22,14 @@ import BADashboard from './pages/business-admin/Dashboard';
 import BAEmployees from './pages/business-admin/Employees';
 import BALeads from './pages/business-admin/Leads';
 import BALeadOverview from './pages/business-admin/LeadOverview';
+import BASettings from './pages/business-admin/Settings';
 
 // Employee
 import EmployeeLayout from './layouts/EmployeeLayout';
 import EmpDashboard from './pages/employee/Dashboard';
 import EmpMyLeads from './pages/employee/MyLeads';
+import EmpProfile from './pages/employee/Profile';
+import LeadDetail from './pages/employee/LeadDetail';
 
 // ── Protected Route ─────────────────────────────
 const ProtectedRoute = ({ children, allowedRoles, slugParam }) => {
@@ -98,10 +101,11 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<BADashboard />} />
-        <Route path="employees" element={<BAEmployees />} />
-        <Route path="leads" element={<BALeads />} />
+        <Route path="dashboard"     element={<BADashboard />} />
+        <Route path="employees"     element={<BAEmployees />} />
+        <Route path="leads"         element={<BALeads />} />
         <Route path="lead-overview" element={<BALeadOverview />} />
+        <Route path="settings"      element={<BASettings />} />
       </Route>
 
       {/* ── Employee ── */}
@@ -114,8 +118,10 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<EmpDashboard />} />
-        <Route path="my-leads" element={<EmpMyLeads />} />
+        <Route path="dashboard"    element={<EmpDashboard />} />
+        <Route path="my-leads"     element={<EmpMyLeads />} />
+        <Route path="my-leads/:id" element={<LeadDetail />} />
+        <Route path="profile"      element={<EmpProfile />} />
       </Route>
 
       {/* ── Default ── */}
