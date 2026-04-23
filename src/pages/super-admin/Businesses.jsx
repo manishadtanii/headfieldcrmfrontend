@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Building2, Users, Wifi, ToggleLeft, ToggleRight, Trash2, Edit2, X, Loader2, Check, Copy } from 'lucide-react';
+import { Plus, Search, Building2, Users, Wifi, ToggleLeft, ToggleRight, Trash2, Edit2, X, Loader2, Check, Copy, Eye } from 'lucide-react';
 import { adminBusinessAPI } from '../../api';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 // ── Create/Edit Modal ──────────────────────
@@ -101,6 +102,7 @@ const BusinessModal = ({ business, onClose, onSaved }) => {
 
 // ── Main Page ─────────────────────────────
 export default function SABusinesses() {
+  const navigate = useNavigate();
   const [businesses, setBusinesses] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -217,7 +219,12 @@ export default function SABusinesses() {
                       {biz.name[0]}
                     </div>
                     <div>
-                      <div style={{ fontWeight: 600 }}>{biz.name}</div>
+                      <div
+                        style={{ fontWeight: 600, cursor: 'pointer', color: 'var(--primary-light)' }}
+                        onClick={() => navigate(`/admin/businesses/${biz.id}`)}
+                      >
+                        {biz.name}
+                      </div>
                       {biz.admin && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Admin: {biz.admin.name}</div>}
                     </div>
                   </div>
@@ -258,6 +265,11 @@ export default function SABusinesses() {
                 </td>
                 <td>
                   <div className="flex gap-2">
+                    <button className="btn btn-ghost btn-icon btn-sm" title="View Details"
+                      onClick={() => navigate(`/admin/businesses/${biz.id}`)}
+                      style={{ color: '#818cf8' }}>
+                      <Eye size={14} />
+                    </button>
                     <button className="btn btn-ghost btn-icon btn-sm" title="Edit"
                       onClick={() => setModal(biz)}>
                       <Edit2 size={14} />

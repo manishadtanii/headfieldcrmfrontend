@@ -13,6 +13,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 import SuperAdminLayout from './layouts/SuperAdminLayout';
 import SADashboard from './pages/super-admin/Dashboard';
 import SABusinesses from './pages/super-admin/Businesses';
+import SABusinessDetail from './pages/super-admin/BusinessDetail';
 import SAUsers from './pages/super-admin/Users';
 import SASessions from './pages/super-admin/Sessions';
 
@@ -84,6 +85,7 @@ const AppRoutes = () => {
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<SADashboard />} />
         <Route path="businesses" element={<SABusinesses />} />
+        <Route path="businesses/:id" element={<SABusinessDetail />} />
         <Route path="users" element={<SAUsers />} />
         <Route path="sessions" element={<SASessions />} />
       </Route>
