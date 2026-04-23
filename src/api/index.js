@@ -13,12 +13,13 @@ export const authAPI = {
 
 // ── Super Admin — Business APIs ───────────────────────────────────
 export const adminBusinessAPI = {
-  getAll: (params) => api.get('/admin/businesses', { params }),
-  getById: (id) => api.get(`/admin/businesses/${id}`),
-  create: (data) => api.post('/admin/businesses', data),
-  update: (id, data) => api.put(`/admin/businesses/${id}`, data),
-  toggle: (id) => api.patch(`/admin/businesses/${id}/toggle`),
-  delete: (id) => api.delete(`/admin/businesses/${id}`),
+  getAll:    (params) => api.get('/admin/businesses', { params }),
+  getById:   (id)     => api.get(`/admin/businesses/${id}`),
+  getLeads:  (id, params) => api.get(`/admin/businesses/${id}/leads`, { params }),
+  create:    (data)   => api.post('/admin/businesses', data),
+  update:    (id, data) => api.put(`/admin/businesses/${id}`, data),
+  toggle:    (id)     => api.patch(`/admin/businesses/${id}/toggle`),
+  delete:    (id)     => api.delete(`/admin/businesses/${id}`),
 };
 
 // ── Super Admin — User APIs ───────────────────────────────────────
