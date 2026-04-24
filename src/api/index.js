@@ -42,7 +42,9 @@ export const adminAnalyticsAPI = {
 // ── Business Admin APIs — /api/b/:slug/* ─────────────────────────
 export const baAPI = {
   // Dashboard
-  getOverview: (slug) => api.get(`/b/${slug}/overview`),
+  getOverview:      (slug)         => api.get(`/b/${slug}/overview`),
+  getLeadTrend:     (slug)         => api.get(`/b/${slug}/lead-trend`),
+  getDashboardLeads:(slug, filter) => api.get(`/b/${slug}/dashboard-leads`, { params: { filter } }),
 
   // Employee management
   getEmployees: (slug, params) => api.get(`/b/${slug}/employees`, { params }),
@@ -103,6 +105,11 @@ export const baAPI = {
   // ── Web-to-Lead API Key ───────────────────────────────────────
   getApiKey:       (slug) => api.get(`/b/${slug}/api-key`),
   generateApiKey:  (slug) => api.post(`/b/${slug}/generate-api-key`),
+
+  // ── Recycle Bin ───────────────────────────────────────────────
+  getTrash:           (slug, params) => api.get(`/b/${slug}/leads/trash`, { params }),
+  restoreLead:        (slug, id)     => api.patch(`/b/${slug}/leads/trash/${id}/restore`),
+  permanentDelete:    (slug, id)     => api.delete(`/b/${slug}/leads/trash/${id}/permanent`),
 };
 
 // ── Employee APIs — /api/b/:slug/* ───────────────────────────────

@@ -24,6 +24,7 @@ import BAEmployees from './pages/business-admin/Employees';
 import BALeads from './pages/business-admin/Leads';
 import BALeadOverview from './pages/business-admin/LeadOverview';
 import BASettings from './pages/business-admin/Settings';
+import BARecycleBin from './pages/business-admin/RecycleBin';
 
 // Employee
 import EmployeeLayout from './layouts/EmployeeLayout';
@@ -107,6 +108,7 @@ const AppRoutes = () => {
         <Route path="employees"     element={<BAEmployees />} />
         <Route path="leads"         element={<BALeads />} />
         <Route path="lead-overview" element={<BALeadOverview />} />
+        <Route path="recycle-bin"   element={<BARecycleBin />} />
         <Route path="settings"      element={<BASettings />} />
       </Route>
 

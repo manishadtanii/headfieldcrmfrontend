@@ -1,30 +1,52 @@
 import { useState, useRef } from 'react';
-import { Upload, X, FileSpreadsheet, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import {
+  Upload, X, FileSpreadsheet, CheckCircle2, AlertTriangle,
+  Download, RefreshCw, AlertCircle, ChevronDown, ChevronUp,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { baAPI } from '../../api';
+
+const REASON_COLOR = {
+  'Missing name':                  '#fbbf24',
+  'Missing phone':                 '#fbbf24',
+  'Duplicate — already in CRM':   '#ef4444',
+  'Duplicate — repeated in file': '#f97316',
+};
+const getReasonColor = (reason) => {
+  for (const key of Object.keys(REASON_COLOR)) {
+    if (reason.includes(key.split('—')[0].trim())) return REASON_COLOR[key];
+  }
+  return '#94a3b8';
+};
 
 export default function ImportModal({ open, onClose, onSuccess, slug }) {
   const [file, setFile]         = useState(null);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading]   = useState(false);
-  const [result, setResult]     = useState(null); // import result
+  const [result, setResult]     = useState(null);
+  const [showAll, setShowAll]   = useState(false);
   const inputRef = useRef();
 
   if (!open) return null;
 
   const handleFile = (f) => {
     if (!f) return;
-    const allowed = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
+    const allowed = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+    ];
     if (!allowed.includes(f.type)) {
       toast.error('Only .xlsx or .xls files allowed');
       return;
     }
     setFile(f);
     setResult(null);
+    setShowAll(false);
   };
 
   const handleDrop = (e) => {
-    e.preventDefault(); setDragging(false);
+    e.preventDefault();
+    setDragging(false);
     handleFile(e.dataTransfer.files[0]);
   };
 
@@ -33,36 +55,87 @@ export default function ImportModal({ open, onClose, onSuccess, slug }) {
     setLoading(true);
     try {
       const res = await baAPI.importLeads(slug, file);
-      const d = res.data.data;
+      const d   = res.data.data;
       setResult(d);
-      toast.success(`${d.inserted} leads imported!`);
-      onSuccess(d.batchId);
+      if (d.inserted > 0) {
+        toast.success(`${d.inserted} leads imported successfully!`);
+        onSuccess(d.batchId);
+      } else {
+        toast.error('0 leads imported — check skipped rows.');
+      }
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Import failed');
+      const errData = err?.response?.data;
+      // If backend returned partial data (all duplicates), show result screen
+      if (errData?.data) {
+        setResult(errData.data);
+        toast.error(errData.message || 'Import failed');
+      } else {
+        toast.error(errData?.message || 'Import failed');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
-    setFile(null); setResult(null); setLoading(false);
+    setFile(null); setResult(null); setLoading(false); setShowAll(false);
     onClose();
+  };
+
+  // Download skipped rows as CSV
+  const downloadSkipped = () => {
+    if (!result?.skippedDetails?.length) return;
+    const headers = ['Excel Row', 'Name', 'Phone', 'Reason'];
+    const rows    = result.skippedDetails.map(s => [
+      s.row, s.name || '—', s.phone || '—', s.reason,
+    ]);
+    const csv  = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `skipped_leads_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Skipped leads downloaded!');
   };
 
   // Download sample template
   const downloadSample = () => {
-    const csv = 'Name,Phone,Email,Alt Phone,Source,Budget,Requirement,Location,Priority,Notes\nRahul Sharma,9876543210,rahul@email.com,,IndiaMart,45L,2BHK,Noida,high,Interested in ready possession';
+    const csv = [
+      'Name,Phone,Email,Alt Phone,Source,Budget,Requirement,Location,Priority,Notes',
+      'Rahul Sharma,9876543210,rahul@email.com,,IndiaMart,45L,2BHK,Noida,high,Interested in ready possession',
+      'Priya Singh,9123456789,priya@email.com,,99acres,60L,3BHK,Gurgaon,medium,',
+    ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'leads_template.csv'; a.click();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url; a.download = 'leads_template.csv'; a.click();
     URL.revokeObjectURL(url);
   };
 
+  // Categorize skip reasons
+  const categorize = (details = []) => {
+    const groups = {};
+    for (const s of details) {
+      groups[s.reason] = (groups[s.reason] || 0) + 1;
+    }
+    return groups;
+  };
+
+  const displayedSkipped = showAll
+    ? (result?.skippedDetails || [])
+    : (result?.skippedDetails || []).slice(0, 8);
+
   return (
     <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
+      <div
+        className="modal"
+        style={{ maxWidth: 580, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="modal-header">
+        <div className="modal-header" style={{ flexShrink: 0 }}>
           <div>
             <div className="modal-title">Import Leads from Excel</div>
             <div className="modal-subtitle">Upload .xlsx or .xls file</div>
@@ -70,7 +143,8 @@ export default function ImportModal({ open, onClose, onSuccess, slug }) {
           <button className="btn btn-ghost btn-icon" onClick={handleClose}><X size={18} /></button>
         </div>
 
-        <div className="modal-body">
+        {/* Scrollable Body */}
+        <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
           {!result ? (
             <>
               {/* Drop zone */}
@@ -80,12 +154,12 @@ export default function ImportModal({ open, onClose, onSuccess, slug }) {
                 onDrop={handleDrop}
                 onClick={() => inputRef.current?.click()}
                 style={{
-                  border: `2px dashed ${dragging ? 'var(--primary)' : file ? 'var(--success)' : 'var(--border)'}`,
-                  borderRadius: 12,
-                  padding: '36px 20px',
+                  border: `2px dashed ${dragging ? '#818cf8' : file ? '#34d399' : 'var(--border)'}`,
+                  borderRadius: 14,
+                  padding: '36px 24px',
                   textAlign: 'center',
                   cursor: 'pointer',
-                  background: dragging ? 'rgba(99,102,241,0.05)' : file ? 'rgba(16,185,129,0.05)' : 'var(--bg-elevated)',
+                  background: dragging ? 'rgba(129,140,248,0.06)' : file ? 'rgba(52,211,153,0.06)' : 'var(--bg-elevated)',
                   transition: 'all .2s',
                   marginBottom: 16,
                 }}
@@ -93,75 +167,160 @@ export default function ImportModal({ open, onClose, onSuccess, slug }) {
                 <input ref={inputRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={e => handleFile(e.target.files[0])} />
                 {file ? (
                   <>
-                    <FileSpreadsheet size={36} color="var(--success)" style={{ margin: '0 auto 10px' }} />
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{file.name}</div>
+                    <FileSpreadsheet size={40} color="#34d399" style={{ margin: '0 auto 12px' }} />
+                    <div style={{ fontWeight: 700, fontSize: 15 }}>{file.name}</div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                      {(file.size / 1024).toFixed(1)} KB · Click to change
+                      {(file.size / 1024).toFixed(1)} KB · Click to change file
                     </div>
                   </>
                 ) : (
                   <>
-                    <Upload size={36} color="var(--text-muted)" style={{ margin: '0 auto 10px' }} />
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>Drag & drop your Excel file here</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>or click to browse</div>
+                    <Upload size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+                    <div style={{ fontWeight: 700, fontSize: 15 }}>Drag & drop your Excel file here</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>or click to browse · .xlsx / .xls only</div>
                   </>
                 )}
               </div>
 
               {/* Template download */}
-              <button className="btn btn-ghost" style={{ width: '100%', marginBottom: 16, fontSize: 13 }} onClick={downloadSample}>
-                <Download size={14} /> Download Sample Template
+              <button
+                onClick={downloadSample}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '9px', borderRadius: 10, background: 'none', border: '1px dashed var(--border)', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 14 }}
+              >
+                <Download size={13} /> Download Sample Template
               </button>
 
-              {/* Column hint */}
-              <div style={{ background: 'var(--bg-elevated)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--text-muted)' }}>
-                <strong style={{ color: 'var(--text)' }}>Required columns:</strong> Name, Phone<br />
-                <strong style={{ color: 'var(--text)' }}>Optional:</strong> Email, Alt Phone, Source, Budget, Requirement, Location, Priority, Notes
+              {/* Column guide */}
+              <div style={{ background: 'var(--bg-elevated)', borderRadius: 10, padding: '12px 16px', fontSize: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Column guide</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {[
+                    { field: 'Name', req: true }, { field: 'Phone', req: true },
+                    { field: 'Email', req: false }, { field: 'Source', req: false },
+                    { field: 'Budget', req: false }, { field: 'Requirement', req: false },
+                    { field: 'Location', req: false }, { field: 'Priority', req: false },
+                    { field: 'Notes', req: false },
+                  ].map(({ field, req }) => (
+                    <span key={field} style={{ padding: '2px 9px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: req ? '#818cf818' : 'var(--bg-card)', color: req ? '#818cf8' : 'var(--text-muted)', border: `1px solid ${req ? '#818cf840' : 'var(--border)'}` }}>
+                      {field}{req && <span style={{ color: '#ef4444', marginLeft: 2 }}>*</span>}
+                    </span>
+                  ))}
+                </div>
               </div>
             </>
           ) : (
-            /* Result screen */
-            <div style={{ textAlign: 'center', padding: '10px 0' }}>
-              <CheckCircle size={48} color="var(--success)" style={{ margin: '0 auto 16px' }} />
-              <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Import Complete!</div>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', margin: '16px 0' }}>
-                <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid var(--success)', borderRadius: 10, padding: '12px 20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--success)' }}>{result.inserted}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Imported</div>
+            /* ── Result Screen ─────────────────────────────── */
+            <>
+              {/* Summary cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+                <div style={{ background: '#34d39912', border: '1px solid #34d39930', borderRadius: 12, padding: '16px', textAlign: 'center' }}>
+                  <CheckCircle2 size={22} color="#34d399" style={{ margin: '0 auto 8px' }} />
+                  <div style={{ fontSize: 30, fontWeight: 800, color: '#34d399', lineHeight: 1 }}>{result.inserted}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Imported ✓</div>
                 </div>
-                <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid var(--danger)', borderRadius: 10, padding: '12px 20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--danger)' }}>{result.skipped}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Skipped</div>
+                <div style={{ background: '#ef444412', border: '1px solid #ef444430', borderRadius: 12, padding: '16px', textAlign: 'center' }}>
+                  <AlertTriangle size={22} color="#ef4444" style={{ margin: '0 auto 8px' }} />
+                  <div style={{ fontSize: 30, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>{result.skipped}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Skipped ✗</div>
                 </div>
-                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 800 }}>{result.total}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Rows</div>
+                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px', textAlign: 'center' }}>
+                  <FileSpreadsheet size={22} color="var(--text-muted)" style={{ margin: '0 auto 8px' }} />
+                  <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1 }}>{result.total}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Total rows</div>
                 </div>
               </div>
-              {result.skippedDetails?.length > 0 && (
-                <div style={{ textAlign: 'left', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', fontSize: 12 }}>
-                  <div style={{ fontWeight: 600, marginBottom: 6, color: 'var(--danger)' }}>Skipped rows:</div>
-                  {result.skippedDetails.slice(0, 5).map((s, i) => (
-                    <div key={i}>Row {s.row}: {s.reason}</div>
-                  ))}
-                  {result.skippedDetails.length > 5 && <div>+{result.skippedDetails.length - 5} more…</div>}
+
+              {/* Skip reason breakdown */}
+              {result.skipped > 0 && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <AlertCircle size={14} color="#ef4444" /> Skip Reason Breakdown
+                    </div>
+                    <button onClick={downloadSkipped}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 8, background: '#818cf818', border: '1px solid #818cf840', cursor: 'pointer', fontSize: 11, fontWeight: 700, color: '#818cf8' }}>
+                      <Download size={11} /> Download CSV
+                    </button>
+                  </div>
+
+                  {/* Reason pills */}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                    {Object.entries(categorize(result.skippedDetails)).map(([reason, count]) => (
+                      <span key={reason} style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: `${getReasonColor(reason)}15`, color: getReasonColor(reason), border: `1px solid ${getReasonColor(reason)}30` }}>
+                        {reason}: {count}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Skipped rows table */}
+                  <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden', marginBottom: 8 }}>
+                    {/* Table header */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '52px 1fr 120px 1fr', padding: '8px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <span>Row</span><span>Name</span><span>Phone</span><span>Reason</span>
+                    </div>
+
+                    {/* Rows */}
+                    <div style={{ maxHeight: 220, overflowY: 'auto' }}>
+                      {displayedSkipped.map((s, i) => (
+                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '52px 1fr 120px 1fr', padding: '8px 12px', borderBottom: i < displayedSkipped.length - 1 ? '1px solid var(--border)' : 'none', alignItems: 'center' }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{s.row}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 8 }}>{s.name || '—'}</span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{s.phone || '—'}</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: getReasonColor(s.reason) }}>{s.reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Show more toggle */}
+                  {result.skippedDetails.length > 8 && (
+                    <button onClick={() => setShowAll(s => !s)}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', borderRadius: 8, background: 'none', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>
+                      {showAll ? <><ChevronUp size={13} /> Show less</> : <><ChevronDown size={13} /> Show all {result.skippedDetails.length} skipped</>}
+                    </button>
+                  )}
+                </>
+              )}
+
+              {/* Success bar */}
+              {result.inserted > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: '#34d39912', border: '1px solid #34d39930', borderRadius: 10 }}>
+                  <CheckCircle2 size={16} color="#34d399" />
+                  <div style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>
+                    {result.inserted} leads successfully added to your CRM. You can now assign them to employees.
+                  </div>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
 
-        <div className="modal-footer">
+        {/* Footer */}
+        <div className="modal-footer" style={{ flexShrink: 0 }}>
           <button className="btn btn-ghost" onClick={handleClose}>
             {result ? 'Close' : 'Cancel'}
           </button>
           {!result && (
-            <button className="btn btn-primary" onClick={handleImport} disabled={!file || loading}>
-              {loading ? 'Importing…' : 'Import Leads'}
+            <button
+              className="btn btn-primary"
+              onClick={handleImport}
+              disabled={!file || loading}
+              style={{ display: 'flex', alignItems: 'center', gap: 7 }}
+            >
+              {loading
+                ? <><RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} /> Importing…</>
+                : <><Upload size={14} /> Import Leads</>}
+            </button>
+          )}
+          {result && result.skipped > 0 && (
+            <button onClick={downloadSkipped}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, background: '#818cf8', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'white' }}>
+              <Download size={13} /> Download Skipped ({result.skipped})
             </button>
           )}
         </div>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
