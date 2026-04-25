@@ -10,6 +10,8 @@ import { baAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
+
+
 // ── Color palette for charts/sources ──────────────────────────────
 const COLORS = ['#818cf8', '#34d399', '#f472b6', '#fbbf24', '#60a5fa', '#a78bfa'];
 const STATUS_CONFIG = {
