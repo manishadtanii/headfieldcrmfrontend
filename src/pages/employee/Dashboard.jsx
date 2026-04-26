@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ClipboardList, PhoneCall, TrendingUp, XCircle, ArrowRight,
   Pin, Megaphone, RefreshCw, Zap, Star, Clock, CheckCircle2,
   AlertCircle, PauseCircle,
 } from 'lucide-react';
+import { RiAlarmLine, RiCheckboxCircleLine, RiTimeLine, RiArrowRightLine } from 'react-icons/ri';
 import toast from 'react-hot-toast';
 import { empAPI } from '../../api';
+import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 
 // ── Status Config ────────────────────────────────────────────────
@@ -54,9 +56,11 @@ export default function EmpDashboard() {
   const { slug }    = useParams();
   const navigate    = useNavigate();
   const { user }    = useAuth();
-  const [data, setData]       = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [now, setNow]         = useState(new Date());
+  const [data, setData]               = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [now, setNow]                 = useState(new Date());
+  const [todayReminders, setToday]    = useState([]);
+  const [doneIds, setDoneIds]         = useState(new Set());
 
   const fetchDash = useCallback(() => {
     setLoading(true);
@@ -66,7 +70,23 @@ export default function EmpDashboard() {
       .finally(() => setLoading(false));
   }, [slug]);
 
+  // Fetch today's reminders for widget
+  const fetchToday = useCallback(() => {
+    api.get(`/b/${slug}/reminders/my/today`)
+      .then(r => setToday(r.data.data || []))
+      .catch(() => {});
+  }, [slug]);
+
+  const markDoneWidget = async (id) => {
+    try {
+      await api.patch(`/b/${slug}/reminders/${id}/done`);
+      setDoneIds(p => new Set([...p, id]));
+      toast.success('Reminder done! ✅');
+    } catch { toast.error('Failed to update'); }
+  };
+
   useEffect(() => { fetchDash(); }, [fetchDash]);
+  useEffect(() => { fetchToday(); }, [fetchToday]);
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(t); }, []);
 
   const stats        = data?.stats        || {};
@@ -186,6 +206,88 @@ export default function EmpDashboard() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── Today's Reminders Widget ──────────────────────────── */}
+      {todayReminders.filter(r => !doneIds.has(r._id) && !['done','missed'].includes(r.status)).length > 0 && (
+        <div style={{
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderRadius: 14, overflow: 'hidden', marginBottom: 24,
+        }}>
+          <div style={{
+            padding: '14px 20px', borderBottom: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'linear-gradient(90deg,rgba(129,140,248,0.08),transparent)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <RiAlarmLine size={18} color="#818cf8" />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>Today's Reminders</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  {todayReminders.filter(r => !doneIds.has(r._id) && !['done','missed'].includes(r.status)).length} pending
+                </div>
+              </div>
+            </div>
+            <Link to={`/${slug}/emp/reminders`} style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              fontSize: 12, color: '#818cf8', fontWeight: 700, textDecoration: 'none',
+            }}>
+              View All <RiArrowRightLine size={14} />
+            </Link>
+          </div>
+          {todayReminders
+            .filter(r => !doneIds.has(r._id) && !['done','missed'].includes(r.status))
+            .slice(0, 4)
+            .map((r, i, arr) => {
+              const minsLeft = Math.round((new Date(r.scheduledAt) - new Date()) / 60000);
+              const isUrgent = minsLeft <= 5;
+              const isOver   = minsLeft < 0;
+              const timeLabel = isOver
+                ? `${Math.abs(minsLeft)}m overdue`
+                : minsLeft === 0 ? 'Now!'
+                : `in ${minsLeft}m`;
+              return (
+                <div key={r._id} style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '12px 20px',
+                  borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                    background: isUrgent ? '#ef444415' : '#818cf815',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <RiTimeLine size={16} color={isUrgent ? '#ef4444' : '#818cf8'} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {r.title}
+                    </div>
+                    {r.lead?.name && (
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{r.lead.name}</div>
+                    )}
+                  </div>
+                  <div style={{
+                    fontSize: 11, fontWeight: 800, flexShrink: 0,
+                    color: isOver ? '#ef4444' : isUrgent ? '#fbbf24' : '#818cf8',
+                    background: isOver ? '#ef444415' : isUrgent ? '#fbbf2415' : '#818cf815',
+                    padding: '3px 10px', borderRadius: 20,
+                  }}>
+                    {timeLabel}
+                  </div>
+                  <button onClick={() => markDoneWidget(r._id)} style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+                    background: '#10b98115', border: '1px solid #10b98140',
+                    color: '#10b981', fontWeight: 700, fontSize: 12, flexShrink: 0,
+                  }}>
+                    <RiCheckboxCircleLine size={14} /> Done
+                  </button>
+                </div>
+              );
+            })
+          }
         </div>
       )}
 

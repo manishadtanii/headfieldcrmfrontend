@@ -1,8 +1,9 @@
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, User, LogOut, Briefcase } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, User, LogOut, Briefcase, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { empAPI } from '../api';
 import NotificationBell from '../components/NotificationBell';
+import AlarmPopup from '../components/reminders/AlarmPopup';
 
 export default function EmployeeLayout() {
   const { user, logout } = useAuth();
@@ -10,9 +11,10 @@ export default function EmployeeLayout() {
   const navigate = useNavigate();
 
   const navItems = [
-    { to: `/${slug}/emp/dashboard`, icon: LayoutDashboard, label: 'Dashboard' },
-    { to: `/${slug}/emp/my-leads`,  icon: ClipboardList,   label: 'My Leads'  },
-    { to: `/${slug}/emp/profile`,   icon: User,            label: 'My Profile' },
+    { to: `/${slug}/emp/dashboard`,  icon: LayoutDashboard, label: 'Dashboard'  },
+    { to: `/${slug}/emp/my-leads`,   icon: ClipboardList,   label: 'My Leads'   },
+    { to: `/${slug}/emp/reminders`,  icon: Bell,            label: 'Reminders'  },
+    { to: `/${slug}/emp/profile`,    icon: User,            label: 'My Profile' },
   ];
 
   const handleLogout = async () => {
@@ -64,6 +66,8 @@ export default function EmployeeLayout() {
       </aside>
 
       <main className="main-content">
+        {/* In-App Alarm — watches reminders from ANY employee page */}
+        <AlarmPopup slug={slug} />
         {/* Top bar with bell */}
         <div style={{
           display: 'flex', justifyContent: 'flex-end',

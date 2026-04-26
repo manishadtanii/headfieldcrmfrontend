@@ -16,6 +16,7 @@ import SABusinesses from './pages/super-admin/Businesses';
 import SABusinessDetail from './pages/super-admin/BusinessDetail';
 import SAUsers from './pages/super-admin/Users';
 import SASessions from './pages/super-admin/Sessions';
+import SAAutomation from './pages/super-admin/AutomationTools';
 
 // Business Admin
 import BusinessLayout from './layouts/BusinessLayout';
@@ -25,6 +26,8 @@ import BALeads from './pages/business-admin/Leads';
 import BALeadOverview from './pages/business-admin/LeadOverview';
 import BASettings from './pages/business-admin/Settings';
 import BARecycleBin from './pages/business-admin/RecycleBin';
+import BAReminders from './pages/business-admin/Reminders';
+import BAAutomation from './pages/business-admin/AutomationTools';
 
 // Employee
 import EmployeeLayout from './layouts/EmployeeLayout';
@@ -32,6 +35,7 @@ import EmpDashboard from './pages/employee/Dashboard';
 import EmpMyLeads from './pages/employee/MyLeads';
 import EmpProfile from './pages/employee/Profile';
 import LeadDetail from './pages/employee/LeadDetail';
+import EmpReminders from './pages/employee/Reminders';
 
 // ── Protected Route ─────────────────────────────
 const ProtectedRoute = ({ children, allowedRoles, slugParam }) => {
@@ -84,11 +88,12 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="dashboard" element={<SADashboard />} />
+        <Route path="dashboard"  element={<SADashboard />} />
         <Route path="businesses" element={<SABusinesses />} />
         <Route path="businesses/:id" element={<SABusinessDetail />} />
-        <Route path="users" element={<SAUsers />} />
-        <Route path="sessions" element={<SASessions />} />
+        <Route path="users"      element={<SAUsers />} />
+        <Route path="sessions"   element={<SASessions />} />
+        <Route path="automation" element={<SAAutomation />} />
       </Route>
 
       {/* ── Business Admin ── */}
@@ -108,6 +113,8 @@ const AppRoutes = () => {
         <Route path="employees"     element={<BAEmployees />} />
         <Route path="leads"         element={<BALeads />} />
         <Route path="lead-overview" element={<BALeadOverview />} />
+        <Route path="reminders"     element={<BAReminders />} />
+        <Route path="automation"    element={<BAAutomation />} />
         <Route path="recycle-bin"   element={<BARecycleBin />} />
         <Route path="settings"      element={<BASettings />} />
       </Route>
@@ -125,6 +132,7 @@ const AppRoutes = () => {
         <Route path="dashboard"    element={<EmpDashboard />} />
         <Route path="my-leads"     element={<EmpMyLeads />} />
         <Route path="my-leads/:id" element={<LeadDetail />} />
+        <Route path="reminders"    element={<EmpReminders />} />
         <Route path="profile"      element={<EmpProfile />} />
       </Route>
 

@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, BarChart2, Code2, LogOut, Building2, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, BarChart2, Code2, LogOut, Building2, Trash2, Bell, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { baAPI } from '../api';
 import NotificationBell from '../components/NotificationBell';
@@ -10,12 +10,14 @@ export default function BusinessLayout() {
   const navigate = useNavigate();
 
   const navItems = [
-    { to: `/${slug}/dashboard`,     icon: LayoutDashboard, label: 'Dashboard'     },
-    { to: `/${slug}/employees`,     icon: Users,           label: 'Employees'     },
-    { to: `/${slug}/leads`,         icon: ClipboardList,   label: 'Leads'         },
-    { to: `/${slug}/lead-overview`, icon: BarChart2,       label: 'Lead Overview' },
-    { to: `/${slug}/recycle-bin`,   icon: Trash2,          label: 'Recycle Bin'   },
-    { to: `/${slug}/settings`,      icon: Code2,           label: 'Dev Zone'      },
+    { to: `/${slug}/dashboard`,       icon: LayoutDashboard, label: 'Dashboard'         },
+    { to: `/${slug}/employees`,       icon: Users,           label: 'Employees'         },
+    { to: `/${slug}/leads`,           icon: ClipboardList,   label: 'Leads'             },
+    { to: `/${slug}/lead-overview`,   icon: BarChart2,       label: 'Lead Overview'     },
+    { to: `/${slug}/reminders`,       icon: Bell,            label: 'Reminders'         },
+    { to: `/${slug}/automation`,      icon: Zap,             label: 'Automation Tools'  },
+    { to: `/${slug}/recycle-bin`,     icon: Trash2,          label: 'Recycle Bin'       },
+    { to: `/${slug}/settings`,        icon: Code2,           label: 'Dev Zone'          },
   ];
 
   const handleLogout = async () => {

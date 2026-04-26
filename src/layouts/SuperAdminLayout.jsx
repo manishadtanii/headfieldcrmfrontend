@@ -1,12 +1,13 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Building2, Users, Activity, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, Activity, LogOut, Shield, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/admin/businesses', icon: Building2, label: 'Businesses' },
-  { to: '/admin/users', icon: Users, label: 'Users' },
-  { to: '/admin/sessions', icon: Activity, label: 'Activity Monitor' },
+  { to: '/admin/dashboard',   icon: LayoutDashboard, label: 'Dashboard'       },
+  { to: '/admin/businesses',  icon: Building2,       label: 'Businesses'      },
+  { to: '/admin/users',       icon: Users,           label: 'Users'           },
+  { to: '/admin/sessions',    icon: Activity,        label: 'Activity Monitor'},
+  { to: '/admin/automation',  icon: Zap,             label: 'Automation Tools'},
 ];
 
 export default function SuperAdminLayout() {
