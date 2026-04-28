@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { useLogo } from '../../hooks/useLogo';
 
 export default function AdminLogin() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const logo = useLogo();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,9 +39,7 @@ export default function AdminLogin() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="auth-logo-icon">
-            <Shield size={22} color="white" />
-          </div>
+          <img src={logo} alt="Logo" className="auth-logo-img" />
           <div>
             <div style={{ fontWeight: 700, fontSize: 18 }}>CRM Platform</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Admin Portal</div>

@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import LoadingScreen from './components/LoadingScreen';
 
 // Auth Pages
 import AdminLogin from './pages/auth/AdminLogin';
@@ -37,11 +39,18 @@ import EmpProfile from './pages/employee/Profile';
 import LeadDetail from './pages/employee/LeadDetail';
 import EmpReminders from './pages/employee/Reminders';
 
-// ── Protected Route ─────────────────────────────
+// ── Protected Route ─────────────────────────────────────────────
 const ProtectedRoute = ({ children, allowedRoles, slugParam }) => {
   const { isAuthenticated, user, loading } = useAuth();
+  const [minDone, setMinDone] = useState(false);
 
-  if (loading) return <div className="loading-screen"><div className="spinner" /></div>;
+  // Always show loader for at least 1.2s — prevents flash + lets user see the animation
+  useEffect(() => {
+    const t = setTimeout(() => setMinDone(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading || !minDone) return <LoadingScreen />;
 
   if (!isAuthenticated) {
     if (slugParam) return <Navigate to={`/${slugParam}/login`} replace />;
@@ -151,9 +160,17 @@ export default function App() {
           position="top-right"
           toastOptions={{
             duration: 4000,
-            style: { background: '#1e293b', color: '#f1f5f9', border: '1px solid #334155' },
-            success: { iconTheme: { primary: '#10b981', secondary: '#f1f5f9' } },
-            error: { iconTheme: { primary: '#ef4444', secondary: '#f1f5f9' } },
+            style: {
+              background: 'var(--bg-elevated)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border)',
+              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+              fontSize: 14,
+              borderRadius: 10,
+              boxShadow: 'var(--shadow)',
+            },
+            success: { iconTheme: { primary: '#10b981', secondary: 'var(--bg-elevated)' } },
+            error:   { iconTheme: { primary: '#ef4444', secondary: 'var(--bg-elevated)' } },
           }}
         />
         <AppRoutes />

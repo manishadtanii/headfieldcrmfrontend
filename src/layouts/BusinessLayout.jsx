@@ -1,23 +1,29 @@
+import { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, BarChart2, Code2, LogOut, Building2, Trash2, Bell, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, BarChart2, Code2, LogOut, Trash2, Bell, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { baAPI } from '../api';
 import NotificationBell from '../components/NotificationBell';
+import ThemeToggle from '../components/ThemeToggle';
+import PageWrapper from '../components/PageWrapper';
+import { useLogo } from '../hooks/useLogo';
 
 export default function BusinessLayout() {
   const { user, logout } = useAuth();
-  const { slug } = useParams();
-  const navigate = useNavigate();
+  const { slug }         = useParams();
+  const navigate         = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
+  const logo = useLogo();
 
   const navItems = [
-    { to: `/${slug}/dashboard`,       icon: LayoutDashboard, label: 'Dashboard'         },
-    { to: `/${slug}/employees`,       icon: Users,           label: 'Employees'         },
-    { to: `/${slug}/leads`,           icon: ClipboardList,   label: 'Leads'             },
-    { to: `/${slug}/lead-overview`,   icon: BarChart2,       label: 'Lead Overview'     },
-    { to: `/${slug}/reminders`,       icon: Bell,            label: 'Reminders'         },
-    { to: `/${slug}/automation`,      icon: Zap,             label: 'Automation Tools'  },
-    { to: `/${slug}/recycle-bin`,     icon: Trash2,          label: 'Recycle Bin'       },
-    { to: `/${slug}/settings`,        icon: Code2,           label: 'Dev Zone'          },
+    { to: `/${slug}/dashboard`,     icon: LayoutDashboard, label: 'Dashboard'        },
+    { to: `/${slug}/employees`,     icon: Users,           label: 'Employees'        },
+    { to: `/${slug}/leads`,         icon: ClipboardList,   label: 'Leads'            },
+    { to: `/${slug}/lead-overview`, icon: BarChart2,       label: 'Lead Overview'    },
+    { to: `/${slug}/reminders`,     icon: Bell,            label: 'Reminders'        },
+    { to: `/${slug}/automation`,    icon: Zap,             label: 'Automation Tools' },
+    { to: `/${slug}/recycle-bin`,   icon: Trash2,          label: 'Recycle Bin'      },
+    { to: `/${slug}/settings`,      icon: Code2,           label: 'Dev Zone'         },
   ];
 
   const handleLogout = async () => {
@@ -26,66 +32,68 @@ export default function BusinessLayout() {
   };
 
   return (
-    <div className="app-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        {/* Logo / Business Name */}
+    <div className="app-layout" data-sidebar-collapsed={collapsed ? 'true' : 'false'}>
+      <aside className={`sidebar${collapsed ? ' is-collapsed' : ''}`}>
+
+        {/* Logo */}
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon" style={{ background: 'var(--success)' }}>
-            <Building2 size={18} color="white" />
-          </div>
-          <div>
-            <div className="sidebar-logo-text">{user?.business?.name || slug}</div>
-            <div className="sidebar-logo-sub">Business Admin</div>
-          </div>
+          <img src={logo} alt="Logo" className="sidebar-logo-img" />
+          {!collapsed && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="sidebar-logo-text">{user?.business?.name || slug}</div>
+              <div className="sidebar-logo-sub">Business Admin</div>
+            </div>
+          )}
+          <button
+            className="sidebar-collapse-btn"
+            onClick={() => setCollapsed(c => !c)}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
         </div>
 
         {/* Nav */}
         <nav className="sidebar-nav">
-          <div className="nav-section-label">Main Menu</div>
+          {!collapsed && <div className="nav-section-label">Main Menu</div>}
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
-              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              title={collapsed ? label : undefined}
+              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
             >
               <Icon size={18} />
-              {label}
+              <span className="nav-label">{label}</span>
             </NavLink>
           ))}
         </nav>
 
-        {/* User Card */}
+        {/* Footer */}
         <div className="sidebar-footer">
           <div className="user-card">
             <div className="user-avatar" style={{ background: 'var(--success)' }}>
               {user?.name?.[0]?.toUpperCase()}
             </div>
-            <div className="user-info">
-              <div className="user-name">{user?.name}</div>
-              <div className="user-role">/{slug}</div>
-            </div>
-            <button
-              className="btn btn-ghost btn-icon"
-              onClick={handleLogout}
-              title="Logout"
-            >
+            {!collapsed && (
+              <div className="user-info">
+                <div className="user-name">{user?.name}</div>
+                <div className="user-role">/{slug}</div>
+              </div>
+            )}
+            <button className="btn btn-ghost btn-icon" onClick={handleLogout} title="Logout">
               <LogOut size={16} />
             </button>
           </div>
+          {!collapsed && <ThemeToggle />}
         </div>
       </aside>
 
-      {/* Main */}
       <main className="main-content">
-        {/* Top bar with bell */}
-        <div style={{
-          display: 'flex', justifyContent: 'flex-end',
-          padding: '12px 24px 0',
-        }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 24px 0' }}>
           <NotificationBell apiObj={baAPI} />
         </div>
-        <Outlet />
+        <PageWrapper><Outlet /></PageWrapper>
       </main>
     </div>
   );

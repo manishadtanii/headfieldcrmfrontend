@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Building2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { useLogo } from '../../hooks/useLogo';
 
 export default function BusinessLogin() {
   const { login, logout } = useAuth();
   const { slug } = useParams();
   const navigate = useNavigate();
+  const logo = useLogo();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,9 +63,7 @@ export default function BusinessLogin() {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-logo">
-          <div className="auth-logo-icon" style={{ background: 'var(--success)' }}>
-            <Building2 size={22} color="white" />
-          </div>
+          <img src={logo} alt="Logo" className="auth-logo-img" />
           <div>
             <div style={{ fontWeight: 700, fontSize: 18, textTransform: 'capitalize' }}>{slug}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>CRM Portal</div>

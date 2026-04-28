@@ -10,6 +10,8 @@ import toast from 'react-hot-toast';
 import { empAPI } from '../../api';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { useCountUp } from '../../hooks/useCountUp';
+import { StatCardSkeleton } from '../../components/Skeleton';
 
 // ── Status Config ────────────────────────────────────────────────
 const SC = {
@@ -39,18 +41,31 @@ function timeAgo(date) {
   return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-// ── Stat Card ─────────────────────────────────────────────────────
-const StatCard = ({ icon: Icon, label, value, color, grad, sub }) => (
-  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px', position: 'relative', overflow: 'hidden' }}>
-    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: grad }} />
-    <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-      <Icon size={18} color={color} />
+// ── Stat Card — with animated count-up ───────────────────────────
+const StatCard = ({ icon: Icon, label, value, color, grad, sub }) => {
+  const count        = useCountUp(typeof value === 'number' ? value : null, 900);
+  const displayValue = typeof value === 'number' ? count : (value ?? '—');
+
+  return (
+    <div style={{
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
+      borderRadius: 14, padding: '16px 18px',
+      position: 'relative', overflow: 'hidden',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+    >
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: grad }} />
+      <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+        <Icon size={18} color={color} />
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{displayValue}</div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{label}</div>
+      {sub && <div style={{ fontSize: 11, color, marginTop: 3, fontWeight: 600 }}>{sub}</div>}
     </div>
-    <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{value ?? '—'}</div>
-    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{label}</div>
-    {sub && <div style={{ fontSize: 11, color, marginTop: 3, fontWeight: 600 }}>{sub}</div>}
-  </div>
-);
+  );
+};
 
 export default function EmpDashboard() {
   const { slug }    = useParams();
@@ -110,9 +125,7 @@ export default function EmpDashboard() {
     { key: 'hold',        w: stats.on_hold,     color: '#94a3b8' },
   ];
 
-  const Skel = ({ h = 100 }) => (
-    <div style={{ height: h, background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border)', animation: 'pulse 1.5s ease-in-out infinite' }} />
-  );
+  // Old inline Skel replaced by StatCardSkeleton from Skeleton.jsx
 
   return (
     <div className="page-content">
@@ -162,7 +175,7 @@ export default function EmpDashboard() {
       {/* ── Stat Cards ───────────────────────────────────────── */}
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
-          {[...Array(4)].map((_, i) => <Skel key={i} />)}
+          {[...Array(4)].map((_, i) => <StatCardSkeleton key={i} />)}
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
