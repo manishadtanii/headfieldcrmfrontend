@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, BarChart2, Code2, LogOut, Trash2, Bell, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, BarChart2, Code2, LogOut, Trash2, Bell, Zap, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { baAPI } from '../api';
 import NotificationBell from '../components/NotificationBell';
@@ -35,21 +35,16 @@ export default function BusinessLayout() {
     <div className="app-layout" data-sidebar-collapsed={collapsed ? 'true' : 'false'}>
       <aside className={`sidebar${collapsed ? ' is-collapsed' : ''}`}>
 
-        {/* Logo */}
+        {/* Logo only — no text */}
         <div className="sidebar-logo">
           <img src={logo} alt="Logo" className="sidebar-logo-img" />
-          {!collapsed && (
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="sidebar-logo-text">{user?.business?.name || slug}</div>
-              <div className="sidebar-logo-sub">Business Admin</div>
-            </div>
-          )}
+          {!collapsed && <div style={{ flex: 1 }} />}
           <button
             className="sidebar-collapse-btn"
             onClick={() => setCollapsed(c => !c)}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            {collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
           </button>
         </div>
 

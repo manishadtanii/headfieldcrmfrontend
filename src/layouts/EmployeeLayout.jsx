@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, User, LogOut, Bell, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, User, LogOut, Bell, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { empAPI } from '../api';
 import NotificationBell from '../components/NotificationBell';
@@ -32,21 +32,16 @@ export default function EmployeeLayout() {
     <div className="app-layout" data-sidebar-collapsed={collapsed ? 'true' : 'false'}>
       <aside className={`sidebar${collapsed ? ' is-collapsed' : ''}`}>
 
-        {/* Logo */}
+        {/* Logo only — no text */}
         <div className="sidebar-logo">
           <img src={logo} alt="Logo" className="sidebar-logo-img" />
-          {!collapsed && (
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="sidebar-logo-text">{user?.business?.name || slug}</div>
-              <div className="sidebar-logo-sub">Employee Portal</div>
-            </div>
-          )}
+          {!collapsed && <div style={{ flex: 1 }} />}
           <button
             className="sidebar-collapse-btn"
             onClick={() => setCollapsed(c => !c)}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            {collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
           </button>
         </div>
 

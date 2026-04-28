@@ -47,7 +47,7 @@ self.addEventListener('notificationclick', (event) => {
   if (action === 'done' && reminderId) {
     // Best-effort API call to mark done
     event.waitUntil(
-      fetch(`/api/b/realter/reminders/${reminderId}/done`, {
+      fetch(`/api/b/realtor/reminders/${reminderId}/done`, {
         method:  'PATCH',
         headers: {
           'Content-Type':  'application/json',
@@ -60,7 +60,7 @@ self.addEventListener('notificationclick', (event) => {
 
   if (action === 'snooze' && reminderId) {
     event.waitUntil(
-      fetch(`/api/b/realter/reminders/${reminderId}/snooze`, {
+      fetch(`/api/b/realtor/reminders/${reminderId}/snooze`, {
         method:  'PATCH',
         headers: {
           'Content-Type':  'application/json',
