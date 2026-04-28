@@ -1098,9 +1098,9 @@ input, select, textarea { font-family: inherit; }
 
 /* Sidebar logo image */
 .sidebar-logo-img {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
   object-fit: contain;
   flex-shrink: 0;
   transition: width 0.3s ease, height 0.3s ease;
@@ -1108,9 +1108,9 @@ input, select, textarea { font-family: inherit; }
 
 /* Slightly smaller when collapsed */
 .sidebar.is-collapsed .sidebar-logo-img {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
 }
 
 /* Auth page logo */
