@@ -212,23 +212,65 @@ export default function EmpProfile() {
             )}
           </div>
 
-          {/* Tips card */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '18px 22px' }}>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14 }}>💡 Quick Tips</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Today's Game Plan */}
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+            {/* Card header */}
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontWeight: 900, fontSize: 14, letterSpacing: '-0.2px' }}>🗓️ Today's Game Plan</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                  {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })} — make it count 💪
+                </div>
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: '#22c55e15', color: '#22c55e', border: '1px solid #22c55e30' }}>DAILY</span>
+            </div>
+
+            {/* Checklist items */}
+            <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
-                { emoji: '📞', tip: 'Update lead status right after every call — keeps data fresh.' },
-                { emoji: '📝', tip: 'Add notes with key details: budget, requirements, next steps.' },
-                { emoji: '🔒', tip: 'Use a strong password with numbers and special characters.' },
-                { emoji: '⚡', tip: 'Check your dashboard daily to track your pipeline progress.' },
-              ].map(({ emoji, tip }) => (
-                <div key={tip} style={{ display: 'flex', gap: 10, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: 16, flexShrink: 0 }}>{emoji}</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{tip}</span>
+                { emoji: '☀️', title: 'Start strong',       desc: 'Open your dashboard — know your pipeline before your first call.' },
+                { emoji: '📞', title: 'Call first, type later', desc: 'Update lead status right after every conversation. Memory fades fast.' },
+                { emoji: '📝', title: 'Leave a breadcrumb',  desc: 'Add a quick note — budget, timeline, next step. Future-you will thank you.' },
+                { emoji: '🎯', title: 'Chase the hot ones',   desc: 'Green-tagged leads are waiting. One follow-up today = one deal closer.' },
+                { emoji: '🔒', title: 'Log out clean',       desc: 'End of day — update statuses, add pending notes, log out securely.' },
+              ].map(({ emoji, title, desc }) => (
+                <div key={title} style={{ display: 'flex', gap: 12, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 11, border: '1px solid var(--border)', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.3 }}>{emoji}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 2 }}>{title}</div>
+                    <div style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.55 }}>{desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
+
+            {/* Footer motivator */}
+            <div style={{ margin: '0 16px 14px', padding: '10px 14px', borderRadius: 10, background: 'linear-gradient(135deg,rgba(129,140,248,0.08),rgba(34,197,94,0.06))', border: '1px solid rgba(129,140,248,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 16 }}>🏆</span>
+              <span style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                <strong style={{ color: 'var(--text)' }}>Pro tip:</strong> Employees who update notes daily close <em>40% more deals</em>. Small habits, big results.
+              </span>
+            </div>
           </div>
+
+
+          {/* ── Dev card ─────────────────────────────────────────── */}
+          <div style={{ marginTop: 16, borderRadius: 14, padding: 1, background: 'linear-gradient(135deg,#818cf8,#a855f7,#f472b6,#fbbf24)', boxShadow: '0 4px 20px rgba(168,85,247,0.2)' }}>
+            <div style={{ borderRadius: 13, background: 'var(--bg-card)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 26, flexShrink: 0 }}>🧑‍💻</span>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 13 }}>
+                  Built by{' '}
+                  <span style={{ background: 'linear-gradient(90deg,#818cf8,#f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Manish</span>
+                  {' '}— midnight chai, zero bugs (eventually). ☕
+                </div>
+                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.6 }}>
+                  Every pixel here cost him sleep. A quick <em style={{ color: 'var(--text)', fontStyle: 'normal', fontWeight: 700 }}>"thank you Manish"</em> is the only salary he didn't negotiate. 🙏😄
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
