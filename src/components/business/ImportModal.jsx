@@ -7,14 +7,11 @@ import toast from 'react-hot-toast';
 import { baAPI } from '../../api';
 
 const REASON_COLOR = {
-  'Missing name':                  '#fbbf24',
-  'Missing phone':                 '#fbbf24',
-  'Duplicate — already in CRM':   '#ef4444',
-  'Duplicate — repeated in file': '#f97316',
+  'Empty row': '#94a3b8',
 };
 const getReasonColor = (reason) => {
   for (const key of Object.keys(REASON_COLOR)) {
-    if (reason.includes(key.split('—')[0].trim())) return REASON_COLOR[key];
+    if (reason.includes(key)) return REASON_COLOR[key];
   }
   return '#94a3b8';
 };
@@ -100,17 +97,18 @@ export default function ImportModal({ open, onClose, onSuccess, slug }) {
     toast.success('Skipped leads downloaded!');
   };
 
-  // Download sample template
+  // Download sample template with new column headers
   const downloadSample = () => {
     const csv = [
-      'Name,Phone,Email,Alt Phone,Source,Budget,Requirement,Location,Priority,Notes',
-      'Rahul Sharma,9876543210,rahul@email.com,,IndiaMart,45L,2BHK,Noida,high,Interested in ready possession',
-      'Priya Singh,9123456789,priya@email.com,,99acres,60L,3BHK,Gurgaon,medium,',
+      'Sr.,FirstName,MidName,LastName,Phone,Email,Address1,Address2,Address3,Zip,RM Name,Feedback,Source,Budget,Requirement,Notes',
+      '1,Rahul,,Sharma,9876543210,rahul@email.com,123 MG Road,Andheri West,,400058,Suresh Kumar,Interested in 2BHK,IndiaMart,45L,2BHK,Ready to visit site',
+      '2,Priya,A,Singh,9123456789,priya@email.com,Sector 14,,Gurgaon,122001,Amit Shah,,99acres,60L,3BHK,',
+      '3,Vijay,,,8888777766,,,,,,,,Walk-In,,Office Space,',
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href     = url; a.download = 'leads_template.csv'; a.click();
+    a.href = url; a.download = 'leads_template.csv'; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -192,19 +190,21 @@ export default function ImportModal({ open, onClose, onSuccess, slug }) {
 
               {/* Column guide */}
               <div style={{ background: 'var(--bg-elevated)', borderRadius: 10, padding: '12px 16px', fontSize: 12 }}>
-                <div style={{ fontWeight: 700, marginBottom: 6 }}>Column guide</div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Supported columns <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(all optional — only blank rows skipped)</span></div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {[
-                    { field: 'Name', req: true }, { field: 'Phone', req: true },
-                    { field: 'Email', req: false }, { field: 'Source', req: false },
-                    { field: 'Budget', req: false }, { field: 'Requirement', req: false },
-                    { field: 'Location', req: false }, { field: 'Priority', req: false },
-                    { field: 'Notes', req: false },
-                  ].map(({ field, req }) => (
-                    <span key={field} style={{ padding: '2px 9px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: req ? '#818cf818' : 'var(--bg-card)', color: req ? '#818cf8' : 'var(--text-muted)', border: `1px solid ${req ? '#818cf840' : 'var(--border)'}` }}>
-                      {field}{req && <span style={{ color: '#ef4444', marginLeft: 2 }}>*</span>}
+                    'FirstName', 'MidName', 'LastName', 'Name',
+                    'Phone', 'Email', 'Address1', 'Address2', 'Address3',
+                    'Zip', 'RM Name', 'Feedback',
+                    'Source', 'Budget', 'Requirement', 'Location', 'Notes', 'Sr.',
+                  ].map((field) => (
+                    <span key={field} style={{ padding: '2px 9px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'var(--bg-card)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                      {field}
                     </span>
                   ))}
+                </div>
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}>
+                  💡 Old format (Name + Phone) still works. New format (FirstName, LastName, Address1-3, etc.) also works.
                 </div>
               </div>
             </>

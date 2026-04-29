@@ -19,7 +19,7 @@ import SABusinessDetail from './pages/super-admin/BusinessDetail';
 import SAUsers from './pages/super-admin/Users';
 import SASessions from './pages/super-admin/Sessions';
 import SAAutomation from './pages/super-admin/AutomationTools';
-
+import SAProfile from './pages/super-admin/Profile';
 // Business Admin
 import BusinessLayout from './layouts/BusinessLayout';
 import BADashboard from './pages/business-admin/Dashboard';
@@ -97,12 +97,13 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="dashboard"  element={<SADashboard />} />
+        <Route path="dashboard" element={<SADashboard />} />
         <Route path="businesses" element={<SABusinesses />} />
         <Route path="businesses/:id" element={<SABusinessDetail />} />
-        <Route path="users"      element={<SAUsers />} />
-        <Route path="sessions"   element={<SASessions />} />
+        <Route path="users" element={<SAUsers />} />
+        <Route path="sessions" element={<SASessions />} />
         <Route path="automation" element={<SAAutomation />} />
+        <Route path="profile"    element={<SAProfile />} />
       </Route>
 
       {/* ── Business Admin ── */}
@@ -118,14 +119,14 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard"     element={<BADashboard />} />
-        <Route path="employees"     element={<BAEmployees />} />
-        <Route path="leads"         element={<BALeads />} />
+        <Route path="dashboard" element={<BADashboard />} />
+        <Route path="employees" element={<BAEmployees />} />
+        <Route path="leads" element={<BALeads />} />
         <Route path="lead-overview" element={<BALeadOverview />} />
-        <Route path="reminders"     element={<BAReminders />} />
-        <Route path="automation"    element={<BAAutomation />} />
-        <Route path="recycle-bin"   element={<BARecycleBin />} />
-        <Route path="settings"      element={<BASettings />} />
+        <Route path="reminders" element={<BAReminders />} />
+        <Route path="automation" element={<BAAutomation />} />
+        <Route path="recycle-bin" element={<BARecycleBin />} />
+        <Route path="settings" element={<BASettings />} />
       </Route>
 
       {/* ── Employee ── */}
@@ -138,11 +139,11 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard"    element={<EmpDashboard />} />
-        <Route path="my-leads"     element={<EmpMyLeads />} />
+        <Route path="dashboard" element={<EmpDashboard />} />
+        <Route path="my-leads" element={<EmpMyLeads />} />
         <Route path="my-leads/:id" element={<LeadDetail />} />
-        <Route path="reminders"    element={<EmpReminders />} />
-        <Route path="profile"      element={<EmpProfile />} />
+        <Route path="reminders" element={<EmpReminders />} />
+        <Route path="profile" element={<EmpProfile />} />
       </Route>
 
       {/* ── Default ── */}
@@ -170,7 +171,7 @@ export default function App() {
               boxShadow: 'var(--shadow)',
             },
             success: { iconTheme: { primary: '#10b981', secondary: 'var(--bg-elevated)' } },
-            error:   { iconTheme: { primary: '#ef4444', secondary: 'var(--bg-elevated)' } },
+            error: { iconTheme: { primary: '#ef4444', secondary: 'var(--bg-elevated)' } },
           }}
         />
         <AppRoutes />

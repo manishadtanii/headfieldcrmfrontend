@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Building2, Users, Activity, LogOut, Shield, Zap, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, Activity, LogOut, Zap, UserCircle, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import PageWrapper from '../components/PageWrapper';
@@ -12,11 +12,12 @@ const navItems = [
   { to: '/admin/users',      icon: Users,           label: 'Users'            },
   { to: '/admin/sessions',   icon: Activity,        label: 'Activity Monitor' },
   { to: '/admin/automation', icon: Zap,             label: 'Automation Tools' },
+  { to: '/admin/profile',    icon: UserCircle,      label: 'My Profile'       },
 ];
 
 export default function SuperAdminLayout() {
   const { user, logout } = useAuth();
-  const navigate         = useNavigate();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const logo = useLogo();
 

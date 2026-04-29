@@ -1,13 +1,103 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Search, RefreshCw, ChevronLeft, ChevronRight,
   MessageSquarePlus, X, Trash2, Send, StickyNote,
-  Loader2, Phone, Mail, MapPin, Banknote, Home, Tag,
-  Clock, Check,
+  Loader2, Phone, MapPin, Banknote, Home, Tag,
+  Clock, Palette,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { empAPI } from '../../api';
+
+// ── Color Tag Config ─────────────────────────────────────────────
+const COLOR_CONFIG = {
+  none:   { label: 'Clear',    hex: null,      bg: null,         ring: '#64748b' },
+  red:    { label: 'Junk',     hex: '#ef4444', bg: '#ef444412',  ring: '#ef4444' },
+  green:  { label: 'Hot',      hex: '#22c55e', bg: '#22c55e12',  ring: '#22c55e' },
+  yellow: { label: 'Warm',     hex: '#eab308', bg: '#eab30812',  ring: '#eab308' },
+  blue:   { label: 'Cold',     hex: '#3b82f6', bg: '#3b82f612',  ring: '#3b82f6' },
+  purple: { label: 'VIP',      hex: '#a855f7', bg: '#a855f712',  ring: '#a855f7' },
+};
+
+// ── Color Picker Popover ─────────────────────────────────────────
+function ColorPicker({ lead, onColorChange, saving }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = COLOR_CONFIG[lead.colorTag || 'none'];
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        title="Color tag"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 28, height: 28, borderRadius: 8,
+          border: `1.5px solid ${lead.colorTag && lead.colorTag !== 'none' ? current.hex : 'var(--border)'}`,
+          background: lead.colorTag && lead.colorTag !== 'none' ? current.bg : 'var(--bg-elevated)',
+          cursor: saving ? 'not-allowed' : 'pointer',
+          transition: 'all .15s',
+          flexShrink: 0,
+        }}
+      >
+        {saving ? (
+          <RefreshCw size={11} style={{ animation: 'spin 1s linear infinite', color: current.hex || 'var(--text-muted)' }} />
+        ) : lead.colorTag && lead.colorTag !== 'none' ? (
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: current.hex, display: 'block' }} />
+        ) : (
+          <Palette size={11} color="var(--text-muted)" />
+        )}
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderRadius: 12, padding: '10px 10px 8px',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
+          zIndex: 999,
+          display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center',
+          minWidth: 120,
+          animation: 'fadeInUp .15s ease',
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Tag as</div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {Object.entries(COLOR_CONFIG).map(([key, cfg]) => (
+              <button
+                key={key}
+                title={cfg.label}
+                onClick={() => { onColorChange(lead._id, key); setOpen(false); }}
+                style={{
+                  width: 24, height: 24, borderRadius: '50%',
+                  background: key === 'none' ? 'var(--bg-elevated)' : cfg.hex,
+                  border: `2px solid ${ (lead.colorTag || 'none') === key ? 'white' : 'transparent'}`,
+                  outline: (lead.colorTag || 'none') === key ? `2px solid ${cfg.ring}` : 'none',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'transform .12s',
+                  flexShrink: 0,
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                {key === 'none' && <X size={10} color="var(--text-muted)" />}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{current.label}</div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Status Config ────────────────────────────────────────────────
 const SC = {
@@ -228,6 +318,7 @@ export default function MyLeads() {
   const [filterStatus, setFilter]   = useState('');
   const [page, setPage]             = useState(1);
   const [drawerLead, setDrawerLead] = useState(null);
+  const [savingColor, setSavingColor] = useState(null); // leadId being colored
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -257,6 +348,21 @@ export default function MyLeads() {
     }
   };
 
+  const handleColorChange = async (id, colorTag) => {
+    setSavingColor(id);
+    // Optimistic update
+    setLeads(prev => prev.map(l => l._id === id ? { ...l, colorTag } : l));
+    try {
+      await empAPI.updateLeadColor(slug, id, colorTag);
+    } catch {
+      toast.error('Failed to save color tag');
+      // Revert on failure
+      setLeads(prev => prev.map(l => l._id === id ? { ...l, colorTag: l.colorTag } : l));
+    } finally {
+      setSavingColor(null);
+    }
+  };
+
   // Status counts for tabs
   const counts = leads.reduce((acc, l) => { acc[l.status] = (acc[l.status] || 0) + 1; return acc; }, {});
 
@@ -266,6 +372,7 @@ export default function MyLeads() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.15} }
+        @keyframes fadeInUp { from { opacity:0; transform:translateX(-50%) translateY(6px);} to { opacity:1; transform:translateX(-50%) translateY(0);} }
       `}</style>
 
       <div className="page-content">
@@ -315,18 +422,20 @@ export default function MyLeads() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)' }}>
-                  {['#', 'Lead', 'Phone', 'Source', 'Budget', 'Requirement', 'Status', 'Notes'].map(h => (
-                    <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{h}</th>
+                  {['#', 'Lead', 'Phone', 'Source', 'Budget', 'Requirement', 'Status', 'Notes', ''].map((h, i) => (
+                    <th key={i} style={{ padding: '11px 14px', textAlign: i === 8 ? 'center' : 'left', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      {i === 8 ? <Palette size={13} /> : h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} style={{ padding: 60, textAlign: 'center' }}>
+                  <tr><td colSpan={9} style={{ padding: 60, textAlign: 'center' }}>
                     <Loader2 size={24} color="#818cf8" style={{ animation: 'spin 1s linear infinite' }} />
                   </td></tr>
                 ) : leads.length === 0 ? (
-                  <tr><td colSpan={8}>
+                  <tr><td colSpan={9}>
                     <div style={{ padding: '60px 0', textAlign: 'center' }}>
                       <div style={{ fontSize: 44, marginBottom: 14 }}>📋</div>
                       <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>No leads found</div>
@@ -336,13 +445,21 @@ export default function MyLeads() {
                     </div>
                   </td></tr>
                 ) : leads.map((lead, idx) => {
-                  const rowNum   = (pagination.page - 1) * 20 + idx + 1;
+                  const rowNum    = (pagination.page - 1) * 20 + idx + 1;
                   const noteCount = lead.notes?.length || 0;
-                  const cfg      = SC[lead.status] || SC.new;
+                  const cfg       = SC[lead.status] || SC.new;
+                  const colorCfg  = COLOR_CONFIG[lead.colorTag || 'none'];
+                  const rowBg     = colorCfg.bg || 'transparent';
                   return (
-                    <tr key={lead._id} style={{ borderBottom: '1px solid var(--border)', transition: 'background .1s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-elevated)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    <tr key={lead._id} style={{
+                      borderBottom: '1px solid var(--border)',
+                      transition: 'background .15s',
+                      background: rowBg,
+                      borderLeft: colorCfg.hex ? `3px solid ${colorCfg.hex}` : '3px solid transparent',
+                    }}
+                      onMouseEnter={e => e.currentTarget.style.background = colorCfg.hex
+                        ? `${colorCfg.hex}20` : 'var(--bg-elevated)'}
+                      onMouseLeave={e => e.currentTarget.style.background = rowBg}
                     >
                       <td style={{ padding: '11px 14px', color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>{rowNum}</td>
 
@@ -392,6 +509,15 @@ export default function MyLeads() {
                           <MessageSquarePlus size={13} />
                           {noteCount > 0 ? <span>{noteCount}</span> : <span>Add</span>}
                         </button>
+                      </td>
+
+                      {/* ── Color Tag ── */}
+                      <td style={{ padding: '11px 14px', textAlign: 'center' }}>
+                        <ColorPicker
+                          lead={lead}
+                          onColorChange={handleColorChange}
+                          saving={savingColor === lead._id}
+                        />
                       </td>
                     </tr>
                   );
