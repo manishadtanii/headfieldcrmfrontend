@@ -5,6 +5,7 @@ import {
   CheckSquare, Square, UserPlus, Trash2, ChevronLeft, ChevronRight,
   ClipboardList, UserRound, UserMinus, Trophy, TrendingUp,
   AlertTriangle, X, Loader2, Filter,
+  Phone, Mail, MapPin, Calendar, Wallet, Home, Building2, Eye,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { baAPI } from '../../api';
@@ -109,6 +110,115 @@ const ConfirmModal = ({ lead, onConfirm, onClose, loading }) => (
 
 
 
+// ── Lead Detail Drawer ─────────────────────────────────────────────
+const PRIORITY_COLORS = {
+  high:   '#ef4444',
+  medium: '#fbbf24',
+  low:    '#34d399',
+};
+
+const DetailRow = ({ icon: Icon, label, value, color }) => {
+  if (!value) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ width: 28, height: 28, borderRadius: 7, background: `${color || '#818cf8'}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+        <Icon size={13} color={color || '#818cf8'} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, wordBreak: 'break-word' }}>{value}</div>
+      </div>
+    </div>
+  );
+};
+
+const LeadDetailDrawer = ({ lead, onClose }) => {
+  if (!lead) return null;
+  const cfg = SC[lead.status] || SC.new;
+  const pColor = PRIORITY_COLORS[lead.priority] || PRIORITY_COLORS.medium;
+
+  const fmt = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null;
+  const fmtFull = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, backdropFilter: 'blur(2px)' }} />
+
+      {/* Drawer Panel */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0, width: 420,
+        background: 'var(--bg-card)', borderLeft: '1px solid var(--border)',
+        zIndex: 1001, overflowY: 'auto', boxShadow: '-8px 0 40px rgba(0,0,0,0.25)',
+        display: 'flex', flexDirection: 'column',
+      }}>
+
+        {/* ── Header ────────────────────────────────────────────── */}
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: getGrad(lead.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18, color: 'white', flexShrink: 0 }}>
+                {lead.name?.[0]?.toUpperCase() || '?'}
+              </div>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.2 }}>{lead.name || '—'}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{lead.email || ''}</div>
+              </div>
+            </div>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, background: 'none', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', flexShrink: 0 }}>
+              <X size={15} />
+            </button>
+          </div>
+
+          {/* Status + Priority badges */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.color}30` }}>
+              {cfg.label}
+            </span>
+            <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, color: pColor, background: `${pColor}18`, border: `1px solid ${pColor}30` }}>
+              {lead.priority?.charAt(0).toUpperCase() + lead.priority?.slice(1)} Priority
+            </span>
+          </div>
+        </div>
+
+        {/* ── Body ──────────────────────────────────────────────── */}
+        <div style={{ padding: '8px 24px 24px', flex: 1 }}>
+
+          {/* Contact Info */}
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 16, marginBottom: 4 }}>Contact</div>
+          <DetailRow icon={Phone}    label="Phone"        value={lead.phone}   color="#34d399" />
+          <DetailRow icon={Mail}     label="Email"        value={lead.email}   color="#60a5fa" />
+          <DetailRow icon={MapPin}   label="Location"     value={lead.location} color="#f472b6" />
+
+          {/* Lead Details */}
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 20, marginBottom: 4 }}>Lead Info</div>
+          <DetailRow icon={Building2} label="Project Name" value={lead.projectName} color="#818cf8" />
+          <DetailRow icon={Home}      label="Category"     value={lead.requirement} color="#a78bfa" />
+          <DetailRow icon={Wallet}    label="Budget"       value={lead.budget}      color="#fbbf24" />
+          <DetailRow icon={Eye}       label="Platform / Source" value={lead.source} color="#06b6d4" />
+          <DetailRow icon={Calendar}  label="Inquiry Date" value={fmt(lead.inquiryDate)} color="#f59e0b" />
+
+          {/* Assignment */}
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 20, marginBottom: 4 }}>Assignment</div>
+          <DetailRow icon={UserRound} label="Assigned To"  value={lead.assignedTo?.name || null} color="#34d399" />
+          <DetailRow icon={Calendar}  label="Assigned At"  value={fmt(lead.assignedAt)} color="#34d399" />
+
+          {/* Meta */}
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 20, marginBottom: 4 }}>Meta</div>
+          <DetailRow icon={Calendar}  label="Added On"     value={fmtFull(lead.createdAt)} color="#94a3b8" />
+
+          {/* Unassigned notice */}
+          {!lead.assignedTo && (
+            <div style={{ marginTop: 16, padding: '10px 14px', borderRadius: 10, background: '#fbbf2412', border: '1px solid #fbbf2430', fontSize: 12, color: '#fbbf24', fontWeight: 600 }}>
+              ⚠️ This lead is not assigned to any employee yet.
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
 // ── Pipeline status tabs ───────────────────────────────────────────
 const StatusTabs = ({ value, onChange, counts }) => (
   <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
@@ -142,8 +252,9 @@ export default function BALeads() {
   const [page, setPage]                   = useState(1);
 
   const [selected, setSelected]     = useState(new Set());
-  const [deleteTarget, setDeleteTarget] = useState(null); // full lead object
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null); // detail drawer
 
   const [importOpen, setImportOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
@@ -343,12 +454,14 @@ export default function BALeads() {
                 const rowNum = (pagination.page - 1) * 20 + idx + 1;
                 const pCfg = PRIORITY_CFG[lead.priority] || PRIORITY_CFG.medium;
                 return (
-                  <tr key={lead._id} style={{ borderBottom: '1px solid var(--border)', background: isChecked ? 'rgba(99,102,241,0.05)' : 'transparent', transition: 'background 0.1s' }}
+                  <tr key={lead._id}
+                    onClick={() => setSelectedLead(lead)}
+                    style={{ borderBottom: '1px solid var(--border)', background: isChecked ? 'rgba(99,102,241,0.05)' : 'transparent', transition: 'background 0.1s', cursor: 'pointer' }}
                     onMouseEnter={e => { if (!isChecked) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
-                    onMouseLeave={e => { if (!isChecked) e.currentTarget.style.background = 'transparent'; }}
+                    onMouseLeave={e => { if (!isChecked) e.currentTarget.style.background = isChecked ? 'rgba(99,102,241,0.05)' : 'transparent'; }}
                   >
                     <td style={{ padding: '10px 14px' }}>
-                      <button onClick={() => toggleOne(lead._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                      <button onClick={e => { e.stopPropagation(); toggleOne(lead._id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
                         {isChecked ? <CheckSquare size={15} color="var(--primary)" /> : <Square size={15} color="var(--text-muted)" />}
                       </button>
                     </td>
@@ -404,12 +517,12 @@ export default function BALeads() {
 
                     <td style={{ padding: '10px 14px' }}>
                       <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                        <button onClick={() => { setSelected(new Set([lead._id])); setAssignOpen(true); }}
+                        <button onClick={e => { e.stopPropagation(); setSelected(new Set([lead._id])); setAssignOpen(true); }}
                           title="Assign" style={{ width: 30, height: 30, borderRadius: 7, background: 'none', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--primary)'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-muted)'; }}
                         ><UserPlus size={13} /></button>
-                        <button onClick={() => setDeleteTarget(lead)}
+                        <button onClick={e => { e.stopPropagation(); setDeleteTarget(lead); }}
                           title="Delete" style={{ width: 30, height: 30, borderRadius: 7, background: 'none', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}
                           onMouseEnter={e => { e.currentTarget.style.background = '#ef444412'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#ef444430'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
@@ -466,6 +579,14 @@ export default function BALeads() {
           loading={deleteLoading}
           onConfirm={confirmDelete}
           onClose={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {/* ── Lead Detail Drawer ─────────────────────────────── */}
+      {selectedLead && (
+        <LeadDetailDrawer
+          lead={selectedLead}
+          onClose={() => setSelectedLead(null)}
         />
       )}
 
