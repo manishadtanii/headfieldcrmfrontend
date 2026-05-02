@@ -153,11 +153,17 @@ const AppRoutes = () => {
   );
 };
 
-// ── Root App ──────────────────────────────────────
+// ── Root App ──────────────────────────────────────────────
+const AuroraOrb = () => (
+  <div className="aurora-orb" aria-hidden="true" />
+);
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        {/* Aurora orb 3 — violet/pink center blob, GPU only */}
+        <AuroraOrb />
         <Toaster
           position="top-right"
           toastOptions={{

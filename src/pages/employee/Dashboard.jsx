@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ClipboardList, PhoneCall, TrendingUp, XCircle, ArrowRight,
   Pin, Megaphone, RefreshCw, Zap, Star, Clock, CheckCircle2,
-  AlertCircle, PauseCircle,
+  AlertCircle, PauseCircle, Sun, Sunset, Moon,
 } from 'lucide-react';
 import { RiAlarmLine, RiCheckboxCircleLine, RiTimeLine, RiArrowRightLine } from 'react-icons/ri';
 import toast from 'react-hot-toast';
@@ -41,28 +41,40 @@ function timeAgo(date) {
   return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-// ── Stat Card — with animated count-up ───────────────────────────
+// ── Stat Card — glass premium with animated count-up ─────────────
 const StatCard = ({ icon: Icon, label, value, color, grad, sub }) => {
   const count        = useCountUp(typeof value === 'number' ? value : null, 900);
   const displayValue = typeof value === 'number' ? count : (value ?? '—');
 
   return (
     <div style={{
-      background: 'var(--bg-card)', border: '1px solid var(--border)',
-      borderRadius: 14, padding: '16px 18px',
+      background: 'var(--card-gradient)',
+      backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid var(--glass-border)',
+      borderRadius: 16, padding: '18px 20px',
       position: 'relative', overflow: 'hidden',
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+      transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
+      willChange: 'transform',
     }}
-      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-3px)';
+        e.currentTarget.style.boxShadow = `0 12px 40px ${color}30`;
+        e.currentTarget.style.borderColor = `${color}50`;
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'none';
+        e.currentTarget.style.boxShadow = 'none';
+        e.currentTarget.style.borderColor = 'var(--glass-border)';
+      }}
     >
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: grad }} />
-      <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-        <Icon size={18} color={color} />
+      <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${color}20 0%, transparent 70%)`, pointerEvents: 'none' }} />
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}18`, border: `1px solid ${color}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+        <Icon size={20} color={color} strokeWidth={1.8} />
       </div>
-      <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{displayValue}</div>
-      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{label}</div>
-      {sub && <div style={{ fontSize: 11, color, marginTop: 3, fontWeight: 600 }}>{sub}</div>}
+      <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: 'var(--text-primary)', letterSpacing: '-1.5px', fontVariantNumeric: 'tabular-nums' }}>{displayValue}</div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      {sub && <div style={{ fontSize: 11, color, marginTop: 5, fontWeight: 700 }}>{sub}</div>}
     </div>
   );
 };
@@ -96,7 +108,7 @@ export default function EmpDashboard() {
     try {
       await api.patch(`/b/${slug}/reminders/${id}/done`);
       setDoneIds(p => new Set([...p, id]));
-      toast.success('Reminder done! ✅');
+      toast.success('Reminder done!');
     } catch { toast.error('Failed to update'); }
   };
 
@@ -130,47 +142,52 @@ export default function EmpDashboard() {
   return (
     <div className="page-content">
 
-      {/* ── Welcome Banner ────────────────────────────────────── */}
-      <div style={{ background: 'linear-gradient(135deg,#1e1b4b,#312e81,#1e1b4b)', borderRadius: 18, padding: '24px 28px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
-        {/* Decorative orbs */}
-        <div style={{ position: 'absolute', top: -30, right: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(129,140,248,0.15)' }} />
-        <div style={{ position: 'absolute', bottom: -20, right: 120, width: 90, height: 90, borderRadius: '50%', background: 'rgba(167,139,250,0.10)' }} />
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: getGrad(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 20, color: 'white', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.25)' }}>
-              {user?.name?.[0]?.toUpperCase()}
-            </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
-                {greeting}
+      {/* ── Welcome Banner ──────────────────────────────────── */}
+      {(() => {
+        const GreetIcon = hour < 12 ? Sun : hour < 17 ? Sunset : Moon;
+        const greetColor = hour < 12 ? '#f59e0b' : hour < 17 ? '#f97316' : '#818cf8';
+        return (
+          <div className="anim-fade-up" style={{ background: 'var(--card-gradient)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 18, padding: '24px 28px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -30, right: -30, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(129,140,248,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: -20, right: 120, width: 90, height: 90, borderRadius: '50%', background: 'radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 52, height: 52, borderRadius: '50%', background: getGrad(user?.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 20, color: 'white', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.25)' }}>
+                  {user?.name?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                    <GreetIcon size={14} color={greetColor} strokeWidth={1.8} />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: greetColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{greeting}</span>
+                  </div>
+                  <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px', margin: 0 }}>
+                    {firstName}!
+                  </h1>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>
+                    {stats.total > 0 ? `You have ${stats.new || 0} new leads to follow up` : 'Your leads will appear here once assigned'}
+                  </div>
+                </div>
               </div>
-              <h1 style={{ fontSize: 22, fontWeight: 800, color: 'white', letterSpacing: '-0.5px', margin: 0 }}>
-                {firstName}! 👋
-              </h1>
-              <div style={{ fontSize: 12, color: '#c7d2fe', marginTop: 3 }}>
-                {stats.total > 0 ? `You have ${stats.new || 0} new leads to follow up` : 'Your leads will appear here once assigned'}
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: '#34d399' }}>{stats.won || 0}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>WON</div>
+                </div>
+                <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>{wonPct}%</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>WIN RATE</div>
+                </div>
+                <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: '#fbbf24' }}>{stats.total || 0}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>TOTAL</div>
+                </div>
               </div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 800, color: '#34d399' }}>{stats.won || 0}</div>
-              <div style={{ fontSize: 10, color: '#a5b4fc', fontWeight: 600 }}>WON</div>
-            </div>
-            <div style={{ width: 1, background: '#ffffff20', flexShrink: 0 }} />
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 800, color: 'white' }}>{wonPct}%</div>
-              <div style={{ fontSize: 10, color: '#a5b4fc', fontWeight: 600 }}>WIN RATE</div>
-            </div>
-            <div style={{ width: 1, background: '#ffffff20', flexShrink: 0 }} />
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 800, color: '#fbbf24' }}>{stats.total || 0}</div>
-              <div style={{ fontSize: 10, color: '#a5b4fc', fontWeight: 600 }}>TOTAL</div>
-            </div>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* ── Stat Cards ───────────────────────────────────────── */}
       {loading ? (
@@ -186,9 +203,9 @@ export default function EmpDashboard() {
         </div>
       )}
 
-      {/* ── Pipeline Bar ─────────────────────────────────────── */}
+      {/* ── Pipeline Bar ───────────────────────────────────── */}
       {!loading && stats.total > 0 && (
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 22px', marginBottom: 24 }}>
+        <div className="anim-fade-up anim-delay-2" style={{ background: 'var(--card-gradient)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid var(--glass-border)', borderRadius: 16, padding: '18px 22px', marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontWeight: 700, fontSize: 14 }}>Pipeline Progress</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{stats.total} total leads</div>
@@ -224,9 +241,10 @@ export default function EmpDashboard() {
 
       {/* ── Today's Reminders Widget ──────────────────────────── */}
       {todayReminders.filter(r => !doneIds.has(r._id) && !['done','missed'].includes(r.status)).length > 0 && (
-        <div style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border)',
-          borderRadius: 14, overflow: 'hidden', marginBottom: 24,
+        <div className="anim-fade-up anim-delay-3" style={{
+          background: 'var(--card-gradient)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: 16, overflow: 'hidden', marginBottom: 24,
         }}>
           <div style={{
             padding: '14px 20px', borderBottom: '1px solid var(--border)',
@@ -308,7 +326,7 @@ export default function EmpDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
 
         {/* Recent Leads */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+        <div className="anim-fade-up anim-delay-4" style={{ background: 'var(--card-gradient)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid var(--glass-border)', borderRadius: 16, overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontWeight: 700, fontSize: 14 }}>Recent Leads</div>
@@ -322,11 +340,11 @@ export default function EmpDashboard() {
 
           {loading ? (
             <div style={{ padding: 20 }}>
-              {[...Array(4)].map((_, i) => <div key={i} style={{ height: 56, borderRadius: 10, background: 'var(--bg-elevated)', marginBottom: 8, animation: 'pulse 1.5s ease-in-out infinite' }} />)}
+              {[...Array(4)].map((_, i) => <div key={i} className="skeleton-box" style={{ height: 56, borderRadius: 10, marginBottom: 8 }} />)}
             </div>
           ) : recentLeads.length === 0 ? (
             <div style={{ padding: '48px 0', textAlign: 'center' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+              <AlertCircle size={36} style={{ opacity: 0.25, marginBottom: 14, color: 'var(--text-muted)' }} />
               <div style={{ fontWeight: 700 }}>No leads yet</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Ask your manager to assign leads</div>
             </div>
@@ -361,7 +379,7 @@ export default function EmpDashboard() {
         </div>
 
         {/* Instructions */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+        <div className="anim-fade-up anim-delay-5" style={{ background: 'var(--card-gradient)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid var(--glass-border)', borderRadius: 16, overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fbbf2418', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -374,7 +392,8 @@ export default function EmpDashboard() {
             </div>
             {instructions.some(i => i.isPinned) && (
               <span style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', background: '#fbbf2412', padding: '3px 8px', borderRadius: 20, border: '1px solid #fbbf2430' }}>
-                📌 Pinned
+                <Pin size={12} color="#fbbf24" />
+                Pinned
               </span>
             )}
           </div>
@@ -382,11 +401,11 @@ export default function EmpDashboard() {
           <div style={{ maxHeight: 380, overflowY: 'auto' }}>
             {loading ? (
               <div style={{ padding: 20 }}>
-                {[...Array(3)].map((_, i) => <div key={i} style={{ height: 72, borderRadius: 10, background: 'var(--bg-elevated)', marginBottom: 8, animation: 'pulse 1.5s ease-in-out infinite' }} />)}
+                {[...Array(3)].map((_, i) => <div key={i} className="skeleton-box" style={{ height: 72, borderRadius: 10, marginBottom: 8 }} />)}
               </div>
             ) : instructions.length === 0 ? (
               <div style={{ padding: '48px 0', textAlign: 'center' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>📢</div>
+                <Megaphone size={36} style={{ opacity: 0.25, marginBottom: 14, color: 'var(--text-muted)' }} />
                 <div style={{ fontWeight: 700 }}>No instructions yet</div>
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Your manager hasn't sent any messages</div>
               </div>
@@ -423,10 +442,7 @@ export default function EmpDashboard() {
         </div>
       </div>
 
-      <style>{`
-        @keyframes spin  { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.15} }
-      `}</style>
+      {/* keyframes now in global index.css */}
     </div>
   );
 }

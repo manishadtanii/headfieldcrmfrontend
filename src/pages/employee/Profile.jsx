@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import {
   User, Mail, Briefcase, Shield, KeyRound, Check,
   Eye, EyeOff, Lock, ChevronRight, Building2, Clock,
+  Sun, Phone, FileText, Target, LogOut, Trophy,
+  Code2, Coffee, Heart, Sparkles, Calendar,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -109,7 +111,7 @@ export default function EmpProfile() {
 
         {/* ── LEFT: Profile card ──────────────────────────── */}
         <div>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--card-gradient)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--glass-border)', borderRadius: 16, overflow: 'hidden' }}>
             {/* Gradient header */}
             <div style={{ background: avatarGrad, padding: '32px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, background: 'rgba(0,0,0,0.15)' }} />
@@ -151,7 +153,7 @@ export default function EmpProfile() {
         {/* ── RIGHT: Password + Quick tips ──────────────────── */}
         <div>
           {/* Change Password */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginBottom: 16 }}>
+          <div style={{ background: 'var(--card-gradient)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--glass-border)', borderRadius: 16, overflow: 'hidden', marginBottom: 16 }}>
             <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 9, background: '#818cf818', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -213,13 +215,18 @@ export default function EmpProfile() {
           </div>
 
           {/* Today's Game Plan */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+          <div style={{ background: 'var(--card-gradient)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--glass-border)', borderRadius: 16, overflow: 'hidden' }}>
             {/* Card header */}
             <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontWeight: 900, fontSize: 14, letterSpacing: '-0.2px' }}>🗓️ Today's Game Plan</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                  {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })} — make it count 💪
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: '#22c55e15', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Calendar size={14} color="#22c55e" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 900, fontSize: 14, letterSpacing: '-0.2px' }}>Today's Game Plan</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </div>
                 </div>
               </div>
               <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: '#22c55e15', color: '#22c55e', border: '1px solid #22c55e30' }}>DAILY</span>
@@ -228,14 +235,16 @@ export default function EmpProfile() {
             {/* Checklist items */}
             <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
-                { emoji: '☀️', title: 'Start strong',       desc: 'Open your dashboard — know your pipeline before your first call.' },
-                { emoji: '📞', title: 'Call first, type later', desc: 'Update lead status right after every conversation. Memory fades fast.' },
-                { emoji: '📝', title: 'Leave a breadcrumb',  desc: 'Add a quick note — budget, timeline, next step. Future-you will thank you.' },
-                { emoji: '🎯', title: 'Chase the hot ones',   desc: 'Green-tagged leads are waiting. One follow-up today = one deal closer.' },
-                { emoji: '🔒', title: 'Log out clean',       desc: 'End of day — update statuses, add pending notes, log out securely.' },
-              ].map(({ emoji, title, desc }) => (
+                { Icon: Sun,      color: '#f59e0b', title: 'Start strong',       desc: 'Open your dashboard — know your pipeline before your first call.' },
+                { Icon: Phone,    color: '#06b6d4', title: 'Call first, type later', desc: 'Update lead status right after every conversation. Memory fades fast.' },
+                { Icon: FileText, color: '#818cf8', title: 'Leave a breadcrumb',  desc: 'Add a quick note — budget, timeline, next step. Future-you will thank you.' },
+                { Icon: Target,   color: '#34d399', title: 'Chase the hot ones',   desc: 'Green-tagged leads are waiting. One follow-up today = one deal closer.' },
+                { Icon: LogOut,   color: '#94a3b8', title: 'Log out clean',       desc: 'End of day — update statuses, add pending notes, log out securely.' },
+              ].map(({ Icon, color, title, desc }) => (
                 <div key={title} style={{ display: 'flex', gap: 12, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 11, border: '1px solid var(--border)', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.3 }}>{emoji}</span>
+                  <div style={{ width: 30, height: 30, borderRadius: 8, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                    <Icon size={14} color={color} strokeWidth={2} />
+                  </div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 2 }}>{title}</div>
                     <div style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.55 }}>{desc}</div>
@@ -245,28 +254,40 @@ export default function EmpProfile() {
             </div>
 
             {/* Footer motivator */}
-            <div style={{ margin: '0 16px 14px', padding: '10px 14px', borderRadius: 10, background: 'linear-gradient(135deg,rgba(129,140,248,0.08),rgba(34,197,94,0.06))', border: '1px solid rgba(129,140,248,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 16 }}>🏆</span>
+            <div style={{ margin: '0 16px 14px', padding: '10px 14px', borderRadius: 10, background: 'linear-gradient(135deg,rgba(129,140,248,0.08),rgba(34,197,94,0.06))', border: '1px solid rgba(129,140,248,0.15)', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: '#fbbf2418', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Trophy size={13} color="#fbbf24" />
+              </div>
               <span style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 <strong style={{ color: 'var(--text)' }}>Pro tip:</strong> Employees who update notes daily close <em>40% more deals</em>. Small habits, big results.
               </span>
             </div>
           </div>
 
-
-          {/* ── Dev card ─────────────────────────────────────────── */}
-          <div style={{ marginTop: 16, borderRadius: 14, padding: 1, background: 'linear-gradient(135deg,#818cf8,#a855f7,#f472b6,#fbbf24)', boxShadow: '0 4px 20px rgba(168,85,247,0.2)' }}>
-            <div style={{ borderRadius: 13, background: 'var(--bg-card)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 26, flexShrink: 0 }}>🧑‍💻</span>
+          {/* ── Dev card — clean & fun ────────────────────────── */}
+          <div style={{ marginTop: 16, background: 'var(--card-gradient)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--glass-border)', borderRadius: 14, borderLeft: '3px solid #818cf8', padding: '16px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#818cf815', border: '1px solid #818cf830', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Code2 size={18} color="#818cf8" strokeWidth={2} />
+              </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: 13 }}>
-                  Built by{' '}
-                  <span style={{ background: 'linear-gradient(90deg,#818cf8,#f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Manish</span>
-                  {' '}— midnight chai, zero bugs (eventually). ☕
+                <div style={{ fontWeight: 700, fontSize: 13 }}>
+                  Crafted by{' '}
+                  <span style={{ color: '#818cf8', fontWeight: 900 }}>Manish</span>
                 </div>
-                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.6 }}>
-                  Every pixel here cost him sleep. A quick <em style={{ color: 'var(--text)', fontStyle: 'normal', fontWeight: 700 }}>"thank you Manish"</em> is the only salary he didn't negotiate. 🙏😄
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Coffee size={10} color="#fbbf24" /> Fueled by chai, deployed by hope
                 </div>
+              </div>
+            </div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+              <div style={{ marginBottom: 6 }}>
+                <Sparkles size={11} color="#fbbf24" style={{ display: 'inline', marginRight: 5 }} />
+                Every time this platform saves you even <strong style={{ color: 'var(--text-secondary)' }}>5 minutes</strong> of your day — that's Manish's sleep you're enjoying. He traded his for your convenience.
+              </div>
+              <div>
+                <Coffee size={11} color="#fbbf24" style={{ display: 'inline', marginRight: 5 }} />
+                If you ever feel this CRM actually made your life easier, grab that man <em style={{ color: 'var(--text-secondary)', fontStyle: 'normal', fontWeight: 700 }}>the best coffee you can find</em>. He's earned it — one bug fix at a time.
               </div>
             </div>
           </div>

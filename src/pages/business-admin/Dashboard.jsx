@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import {
   Users, UserCheck, Wifi, UserX, ClipboardList, UserRound,
   UserMinus, Trophy, TrendingUp, Megaphone, Pin, Trash2,
   Send, RefreshCw, ArrowRight, X, Monitor, Smartphone,
-  BarChart2, ChevronRight, Hash, AlertCircle, Star, Zap,
+  BarChart2, ChevronRight, AlertCircle, AlertTriangle,
+  CheckCircle2, Lightbulb, Bell, Loader2, Sun, Sunset, Moon,
 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { baAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { useCountUp } from '../../hooks/useCountUp';
 import toast from 'react-hot-toast';
 
 
@@ -34,35 +36,50 @@ function timeAgo(date) {
   return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-// ── Bar Chart (pure CSS)  ─────────────────────────────────────────
-const BarChart = ({ data }) => {
+// ── Bar Chart — CSS scaleY animation (GPU only) ──────────────────
+const BarChart = memo(({ data }) => {
   const max = Math.max(...data.map(d => d.count), 1);
   const [tooltip, setTooltip] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Tiny delay so bar animates IN after mount
+    const t = setTimeout(() => setMounted(true), 60);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div style={{ padding: '8px 4px' }}>
+      <style>{`
+        @keyframes barGrow {
+          from { transform: scaleY(0); opacity: 0; }
+          to   { transform: scaleY(1); opacity: 1; }
+        }
+      `}</style>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
         {data.map((d, i) => {
-          const pct = Math.round((d.count / max) * 100);
+          const pct = Math.max(Math.round((d.count / max) * 100), 4);
           return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative' }}
               onMouseEnter={() => setTooltip(i)}
               onMouseLeave={() => setTooltip(null)}
             >
               {tooltip === i && (
-                <div style={{ position: 'absolute', top: -32, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
+                <div style={{ position: 'absolute', top: -34, background: 'var(--bg-elevated)', border: '1px solid var(--glass-border)', borderRadius: 7, padding: '4px 10px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10, color: COLORS[i % COLORS.length] }}>
                   {d.count} leads
                 </div>
               )}
               <div style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'flex-end' }}>
                 <div style={{
                   width: '100%',
-                  height: `${Math.max(pct, 4)}%`,
-                  background: `linear-gradient(180deg, ${COLORS[i % COLORS.length]}, ${COLORS[i % COLORS.length]}99)`,
-                  borderRadius: '4px 4px 0 0',
-                  transition: 'height 0.4s ease',
+                  height: `${pct}%`,
+                  background: `linear-gradient(180deg, ${COLORS[i % COLORS.length]}, ${COLORS[i % COLORS.length]}70)`,
+                  borderRadius: '5px 5px 0 0',
+                  boxShadow: tooltip === i ? `0 0 12px ${COLORS[i % COLORS.length]}60` : 'none',
+                  transformOrigin: 'bottom',
+                  animation: mounted ? `barGrow 0.5s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.06}s both` : 'none',
+                  transition: 'box-shadow 0.15s ease',
                   cursor: 'default',
-                  boxShadow: tooltip === i ? `0 0 0 2px ${COLORS[i % COLORS.length]}40` : 'none',
                 }} />
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.2 }}>
@@ -74,7 +91,7 @@ const BarChart = ({ data }) => {
       </div>
     </div>
   );
-};
+});
 
 // ── Lead Source Pills ─────────────────────────────────────────────
 const SourceBar = ({ sources }) => {
@@ -99,45 +116,54 @@ const SourceBar = ({ sources }) => {
   );
 };
 
-// ── Clickable Stat Card ───────────────────────────────────────────
-const StatCard = ({ icon: Icon, label, value, color, grad, sub, onClick }) => (
-  <div
-    onClick={onClick}
-    style={{
-      background: 'linear-gradient(145deg, #1e2a3a, #151f2e)',
-      border: `1px solid rgba(255,255,255,0.07)`,
-      borderRadius: 14, padding: '16px 18px', position: 'relative',
-      overflow: 'hidden', cursor: onClick ? 'pointer' : 'default',
-      transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
-    }}
-    onMouseEnter={e => { if (onClick) {
-      e.currentTarget.style.transform = 'translateY(-2px)';
-      e.currentTarget.style.boxShadow = `0 8px 28px ${color}25`;
-      e.currentTarget.style.borderColor = `${color}40`;
-    }}}
-    onMouseLeave={e => {
-      e.currentTarget.style.transform = 'none';
-      e.currentTarget.style.boxShadow = 'none';
-      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
-    }}
-  >
-    {/* Top color bar */}
-    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: grad }} />
-    {/* Subtle glow bg */}
-    <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: `radial-gradient(circle, ${color}18 0%, transparent 70%)`, pointerEvents: 'none' }} />
-    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative' }}>
-      <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}18`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Icon size={18} color={color} />
+// ── Stat Card — animated count-up, glass, GPU hover ─────────────
+const StatCard = memo(({ icon: Icon, label, value, color, grad, sub, onClick }) => {
+  const animated = useCountUp(value ?? 0, 1000);
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: 'var(--card-gradient)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: 16, padding: '18px 20px',
+        position: 'relative', overflow: 'hidden',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
+        willChange: 'transform',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-3px)';
+        e.currentTarget.style.boxShadow = `0 12px 40px ${color}30`;
+        e.currentTarget.style.borderColor = `${color}50`;
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'none';
+        e.currentTarget.style.boxShadow = 'none';
+        e.currentTarget.style.borderColor = 'var(--glass-border)';
+      }}
+    >
+      {/* Top gradient bar */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: grad }} />
+      {/* Corner radial glow */}
+      <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${color}20 0%, transparent 70%)`, pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative' }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}18`, border: `1px solid ${color}35`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={20} color={color} strokeWidth={1.8} />
+        </div>
+        {onClick && <ChevronRight size={14} color="var(--text-muted)" style={{ marginTop: 4 }} />}
       </div>
-      {onClick && <ChevronRight size={14} color="#475569" style={{ marginTop: 4 }} />}
+      <div style={{ marginTop: 16, position: 'relative' }}>
+        <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: 'var(--text-primary)', letterSpacing: '-1.5px', fontVariantNumeric: 'tabular-nums' }}>
+          {value !== null && value !== undefined ? animated : '—'}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+        {sub && <div style={{ fontSize: 11, color, marginTop: 5, fontWeight: 700 }}>{sub}</div>}
+      </div>
     </div>
-    <div style={{ marginTop: 14, position: 'relative' }}>
-      <div style={{ fontSize: 30, fontWeight: 900, lineHeight: 1, color: '#f1f5f9', letterSpacing: '-1px' }}>{value ?? '—'}</div>
-      <div style={{ fontSize: 12, color: '#64748b', marginTop: 5, fontWeight: 500 }}>{label}</div>
-      {sub && <div style={{ fontSize: 11, color, marginTop: 4, fontWeight: 700 }}>{sub}</div>}
-    </div>
-  </div>
-);
+  );
+});
 
 
 // ── Stat Detail Modal ─────────────────────────────────────────────
@@ -203,8 +229,8 @@ const StatModal = ({ onClose, filter, slug, title }) => {
         <div style={{ overflowY: 'auto', flex: 1 }}>
           {loading ? (
             <div style={{ padding: 40, textAlign: 'center' }}>
-              <div style={{ fontSize: 28, marginBottom: 10 }}>⏳</div>
-              <div style={{ fontSize: 13, color: '#475569' }}>Loading records…</div>
+              <Loader2 size={28} color="var(--primary)" style={{ animation: 'spin 1s linear infinite', marginBottom: 10 }} />
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading records…</div>
             </div>
           ) : items.length === 0 ? (
             <div style={{ padding: 48, textAlign: 'center' }}>
@@ -289,7 +315,13 @@ const StatModal = ({ onClose, filter, slug, title }) => {
 
 
 // ── Broadcast Compose ─────────────────────────────────────────────
-const QUICK_TAGS = ['🔥 Urgent', '📌 Reminder', '💡 Tip', '✅ Update', '⚠️ Alert'];
+const QUICK_TAGS = [
+  { id: 'urgent',   label: 'Urgent',   Icon: AlertTriangle, color: '#ef4444' },
+  { id: 'reminder', label: 'Reminder', Icon: Pin,           color: '#f59e0b' },
+  { id: 'tip',      label: 'Tip',      Icon: Lightbulb,     color: '#06b6d4' },
+  { id: 'update',   label: 'Update',   Icon: CheckCircle2,  color: '#10b981' },
+  { id: 'alert',    label: 'Alert',    Icon: Bell,          color: '#a855f7' },
+];
 
 const BroadcastPanel = ({ slug, onSent }) => {
   const [text, setText] = useState('');
@@ -305,7 +337,7 @@ const BroadcastPanel = ({ slug, onSent }) => {
     try {
       await baAPI.createInstruction(slug, finalText, pinNew);
       setText(''); setSelectedTag(''); setPinNew(false);
-      toast.success('📣 Broadcast sent to team!');
+      toast.success('Broadcast sent to team!');
       onSent();
     } catch {
       toast.error('Failed to send');
@@ -316,13 +348,18 @@ const BroadcastPanel = ({ slug, onSent }) => {
 
   return (
     <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
-      {/* Quick tags */}
+      {/* Quick tags — Lucide icons, no emojis */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-        {QUICK_TAGS.map(tag => (
-          <button key={tag} onClick={() => setSelectedTag(t => t === tag ? '' : tag)}
-            style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, border: '1px solid var(--border)', background: selectedTag === tag ? 'var(--primary)' : 'var(--bg-elevated)', color: selectedTag === tag ? 'white' : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.15s' }}
-          >{tag}</button>
-        ))}
+        {QUICK_TAGS.map(({ id, label, Icon, color }) => {
+          const active = selectedTag === id;
+          return (
+            <button key={id} onClick={() => setSelectedTag(t => t === id ? '' : id)}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, padding: '4px 11px', borderRadius: 20, border: `1px solid ${active ? color : 'var(--border)'}`, background: active ? `${color}22` : 'var(--bg-elevated)', color: active ? color : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.15s' }}
+            >
+              <Icon size={11} strokeWidth={2.2} />{label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Textarea */}
@@ -410,68 +447,66 @@ export default function BADashboard() {
   const stats  = data?.stats;
   const logins = data?.recentLogins || [];
 
-  // Skeleton
+  // Skeleton — shimmer effect
   const Skel = ({ h = 90 }) => (
-    <div style={{ height: h, background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+    <div className="skeleton-box" style={{ height: h, borderRadius: 14, border: '1px solid var(--border)' }} />
   );
 
   return (
     <div className="page-content">
 
-      {/* ── Hero Header Banner ──────────────────────── */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #1a2236 40%, #0f172a 100%)',
-        border: '1px solid rgba(99,102,241,0.2)',
-        borderRadius: 18,
-        padding: '24px 28px',
-        marginBottom: 20,
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* Glow orbs */}
-        <div style={{ position: 'absolute', top: -40, right: 60, width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -30, left: 100, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,211,153,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, position: 'relative' }}>
-          <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', color: '#f1f5f9' }}>
-              {data?.business?.name || 'Dashboard'}
-            </h1>
-            <p style={{ color: '#64748b', marginTop: 5, fontSize: 13 }}>
-              Welcome back, <strong style={{ color: '#94a3b8' }}>{user?.name}</strong>
-              <span style={{ margin: '0 8px', opacity: 0.4 }}>·</span>
-              {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
+      {/* ── Hero Banner ── */}
+      {(() => {
+        const hr = new Date().getHours();
+        const greeting = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+        const GreetIcon = hr < 12 ? Sun : hr < 17 ? Sunset : Moon;
+        const greetColor = hr < 12 ? '#f59e0b' : hr < 17 ? '#f97316' : '#818cf8';
+        return (
+          <div className="anim-fade-up" style={{ background: 'var(--card-gradient)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 18, padding: '22px 26px', marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -50, right: 40, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: -30, left: 80, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, position: 'relative' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <GreetIcon size={18} color={greetColor} strokeWidth={1.8} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: greetColor }}>{greeting}</span>
+                </div>
+                <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', color: 'var(--text-primary)', margin: 0 }}>
+                  {data?.business?.name || 'Dashboard'}
+                </h1>
+                <p style={{ color: 'var(--text-muted)', marginTop: 5, fontSize: 13, margin: '6px 0 0' }}>
+                  <strong style={{ color: 'var(--text-secondary)' }}>{user?.name}</strong>
+                  <span style={{ margin: '0 8px', opacity: 0.4 }}>·</span>
+                  {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => { fetchOverview(); fetchInstructions(); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--text-secondary)', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                ><RefreshCw size={13} /> Refresh</button>
+                <button onClick={() => navigate(`/${slug}/leads`)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, background: 'var(--gradient-primary)', border: '1px solid rgba(99,102,241,0.4)', fontSize: 13, fontWeight: 700, cursor: 'pointer', color: 'white', boxShadow: '0 4px 20px rgba(99,102,241,0.35)' }}
+                ><ArrowRight size={13} /> Manage Leads</button>
+              </div>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              onClick={() => { fetchOverview(); fetchInstructions(); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: '#94a3b8', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#f1f5f9'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
-            >
-              <RefreshCw size={13} /> Refresh
-            </button>
-            <button
-              onClick={() => navigate(`/${slug}/leads`)}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#4f46e5)', border: '1px solid rgba(99,102,241,0.4)', fontSize: 13, fontWeight: 700, cursor: 'pointer', color: 'white', boxShadow: '0 4px 16px rgba(99,102,241,0.3)' }}
-            >
-              <ArrowRight size={13} /> Manage Leads
-            </button>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* ── Team Stats Section ───────────────────────── */}
-      <div style={{
-        background: 'rgba(255,255,255,0.025)',
-        border: '1px solid rgba(255,255,255,0.07)',
+      <div className="anim-fade-up anim-delay-1" style={{
+        background: 'var(--card-gradient)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid var(--glass-border)',
         borderRadius: 16,
         padding: '18px 20px 20px',
         marginBottom: 16,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <div style={{ width: 3, height: 16, borderRadius: 2, background: 'linear-gradient(180deg,#818cf8,#a78bfa)' }} />
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', color: '#64748b', textTransform: 'uppercase' }}>Team Overview</div>
+          <div style={{ width: 3, height: 16, borderRadius: 2, background: 'var(--gradient-primary)' }} />
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Team Overview</div>
         </div>
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
@@ -482,23 +517,24 @@ export default function BADashboard() {
             <StatCard icon={Users}     label="Total Employees"  value={stats?.totalEmployees}    color="#818cf8" grad="linear-gradient(90deg,#818cf8,#a78bfa)" />
             <StatCard icon={UserCheck} label="Active Employees" value={stats?.activeEmployees}   color="#34d399" grad="linear-gradient(90deg,#34d399,#6ee7b7)" />
             <StatCard icon={Wifi}      label="Online Now"       value={stats?.onlineNow}         color="#06b6d4" grad="linear-gradient(90deg,#06b6d4,#67e8f9)"
-              onClick={() => setModal({ filter: 'online', title: '🟢 Online Employees' })} />
+              onClick={() => setModal({ filter: 'online', title: 'Online Employees' })} />
             <StatCard icon={UserX}     label="Inactive"         value={stats?.inactiveEmployees} color="#ef4444" grad="linear-gradient(90deg,#ef4444,#f87171)" />
           </div>
         )}
       </div>
 
       {/* ── Lead Pipeline Section ────────────────────── */}
-      <div style={{
-        background: 'rgba(255,255,255,0.025)',
-        border: '1px solid rgba(255,255,255,0.07)',
+      <div className="anim-fade-up anim-delay-2" style={{
+        background: 'var(--card-gradient)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid var(--glass-border)',
         borderRadius: 16,
         padding: '18px 20px 20px',
         marginBottom: 24,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <div style={{ width: 3, height: 16, borderRadius: 2, background: 'linear-gradient(180deg,#a855f7,#c084fc)' }} />
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', color: '#64748b', textTransform: 'uppercase' }}>Lead Pipeline</div>
+          <div style={{ width: 3, height: 16, borderRadius: 2, background: 'var(--gradient-purple)' }} />
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Lead Pipeline</div>
         </div>
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
@@ -507,15 +543,15 @@ export default function BADashboard() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
             <StatCard icon={ClipboardList} label="Total Leads"    value={stats?.totalLeads}      color="#818cf8" grad="linear-gradient(90deg,#818cf8,#a78bfa)"
-              onClick={() => setModal({ filter: 'total', title: '📋 All Leads' })} />
+              onClick={() => setModal({ filter: 'total', title: 'All Leads' })} />
             <StatCard icon={UserRound}     label="Assigned"       value={stats?.assignedLeads}   color="#34d399" grad="linear-gradient(90deg,#34d399,#6ee7b7)"
               sub={stats?.totalLeads > 0 ? `${Math.round((stats.assignedLeads / stats.totalLeads) * 100)}% assigned` : null}
-              onClick={() => setModal({ filter: 'assigned', title: '👤 Assigned Leads' })} />
+              onClick={() => setModal({ filter: 'assigned', title: 'Assigned Leads' })} />
             <StatCard icon={UserMinus}     label="Unassigned"     value={stats?.unassignedLeads} color="#fbbf24" grad="linear-gradient(90deg,#fbbf24,#f59e0b)"
-              onClick={() => setModal({ filter: 'unassigned', title: '⚠️ Unassigned Leads' })} />
+              onClick={() => setModal({ filter: 'unassigned', title: 'Unassigned Leads' })} />
             <StatCard icon={Trophy}        label="Won This Month" value={stats?.wonThisMonth}    color="#a855f7" grad="linear-gradient(90deg,#a855f7,#c084fc)"
               sub={stats?.wonLeads > 0 ? `${stats.wonLeads} total won` : null}
-              onClick={() => setModal({ filter: 'won', title: '🏆 Won Leads' })} />
+              onClick={() => setModal({ filter: 'won', title: 'Won Leads' })} />
           </div>
         )}
       </div>

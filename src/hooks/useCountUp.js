@@ -1,41 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// useCountUp — animates a number from 0 (or previous value) to `end`
-// Uses requestAnimationFrame + ease-out cubic for smooth, premium feel
-// ─────────────────────────────────────────────────────────────────────────────
-
-export function useCountUp(end, duration = 1000) {
-  const [count, setCount]  = useState(0);
-  const rafRef  = useRef(null);
-  const prevRef = useRef(0);
+export function useCountUp(target, duration = 1200) {
+  const [count, setCount] = useState(0);
+  const rafRef = useRef(null);
 
   useEffect(() => {
-    // Only animate real numbers
-    if (end == null || isNaN(Number(end))) return;
-
-    const target    = Number(end);
-    const startVal  = prevRef.current;
-    const startTime = performance.now();
-
-    const tick = (now) => {
-      const elapsed  = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease     = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      const current  = Math.round(startVal + (target - startVal) * ease);
-
-      setCount(current);
-
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(tick);
-      } else {
-        prevRef.current = target;
-      }
+    if (target === null || target === undefined) return;
+    setCount(0);
+    const start = performance.now();
+    const animate = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setCount(Math.round(eased * target));
+      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
     };
-
-    rafRef.current = requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [end, duration]);
+  }, [target, duration]);
 
   return count;
 }
