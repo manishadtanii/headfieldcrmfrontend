@@ -166,7 +166,7 @@ const StatCard = memo(({ icon: Icon, label, value, color, grad, sub, onClick }) 
 });
 
 
-// ── Stat Detail Modal ─────────────────────────────────────────────
+// ── Stat Detail Panel — inline below stat cards ───────────────────
 const StatModal = ({ onClose, filter, slug, title }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -183,50 +183,43 @@ const StatModal = ({ onClose, filter, slug, title }) => {
 
   return (
     <div
+      className="anim-fade-up"
       style={{
-        position: 'fixed', inset: 0,
-        background: 'rgba(7,11,20,0.82)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+        background: 'var(--card-gradient)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: 16, overflow: 'hidden',
+        marginBottom: 20,
+        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
       }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{
-        background: '#111827',
-        border: '1px solid rgba(255,255,255,0.09)',
-        borderRadius: 20, width: '100%', maxWidth: 560,
-        maxHeight: '82vh', overflow: 'hidden',
-        display: 'flex', flexDirection: 'column',
-        boxShadow: '0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
-        animation: 'cfCardIn 0.22s cubic-bezier(0.34,1.56,0.64,1)',
-      }}>
 
         {/* ── Header ── */}
         <div style={{
-          padding: '18px 22px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
-          background: 'rgba(99,102,241,0.07)',
+          padding: '14px 20px',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--card-gradient-alt)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 16, color: '#f1f5f9', letterSpacing: '-0.3px' }}>{title}</div>
-            <div style={{ fontSize: 12, color: '#475569', marginTop: 3 }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>{title}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
               {loading ? 'Loading…' : `${items.length} record${items.length !== 1 ? 's' : ''} found`}
             </div>
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', color: '#64748b', padding: 8, borderRadius: 8, display: 'flex', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#f1f5f9'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#64748b'; }}
+            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', cursor: 'pointer', color: 'var(--text-muted)', padding: 8, borderRadius: 8, display: 'flex', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-muted)'; }}
           >
             <X size={16} />
           </button>
         </div>
 
         {/* ── Body ── */}
-        <div style={{ overflowY: 'auto', flex: 1 }}>
+        <div style={{ overflowY: 'auto', maxHeight: 360 }}>
           {loading ? (
             <div style={{ padding: 40, textAlign: 'center' }}>
               <Loader2 size={28} color="var(--primary)" style={{ animation: 'spin 1s linear infinite', marginBottom: 10 }} />
@@ -234,31 +227,31 @@ const StatModal = ({ onClose, filter, slug, title }) => {
             </div>
           ) : items.length === 0 ? (
             <div style={{ padding: 48, textAlign: 'center' }}>
-              <AlertCircle size={36} style={{ opacity: 0.25, marginBottom: 14, color: '#64748b' }} />
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#334155', marginBottom: 4 }}>No records found</div>
-              <div style={{ fontSize: 12, color: '#1e293b' }}>Nothing to display here</div>
+              <AlertCircle size={36} style={{ opacity: 0.25, marginBottom: 14, color: 'var(--text-muted)' }} />
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>No records found</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nothing to display here</div>
             </div>
           ) : type === 'employees' ? (
             items.map((s, i) => (
               <div
                 key={i}
-                style={{ padding: '12px 22px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 13, transition: 'background 0.12s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.035)'}
+                style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 13, transition: 'background 0.12s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#34d399,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, color: 'white', flexShrink: 0, boxShadow: '0 0 0 2px rgba(52,211,153,0.2)' }}>
                   {s.userName?.[0]?.toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#e2e8f0' }}>{s.userName}</div>
-                  <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{s.userEmail}</div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>{s.userName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{s.userEmail}</div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#34d399', fontWeight: 700, fontSize: 11 }}>
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', display: 'inline-block', boxShadow: '0 0 6px #34d39980' }} />
                     Online
                   </div>
-                  <div style={{ fontSize: 11, color: '#334155', marginTop: 3 }}>{s.browser} · {s.device}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>{s.browser} · {s.device}</div>
                 </div>
               </div>
             ))
@@ -268,8 +261,8 @@ const StatModal = ({ onClose, filter, slug, title }) => {
               return (
                 <div
                   key={i}
-                  style={{ padding: '12px 22px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 13, transition: 'background 0.12s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.035)'}
+                  style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 13, transition: 'background 0.12s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   {/* Avatar */}
@@ -278,8 +271,8 @@ const StatModal = ({ onClose, filter, slug, title }) => {
                   </div>
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</div>
-                    <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
                       {l.phone || '—'}
                       {l.assignedTo
                         ? <span style={{ marginLeft: 6, color: '#34d399', fontWeight: 600 }}>· {l.assignedTo.name}</span>
@@ -292,7 +285,7 @@ const StatModal = ({ onClose, filter, slug, title }) => {
                     <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 9px', borderRadius: 20, background: `${color}18`, color, border: `1px solid ${color}30`, letterSpacing: '0.02em' }}>
                       {sc[l.status]?.label || l.status}
                     </span>
-                    <div style={{ fontSize: 11, color: '#334155', marginTop: 4 }}>{timeAgo(l.createdAt)}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{timeAgo(l.createdAt)}</div>
                   </div>
                 </div>
               );
@@ -302,14 +295,13 @@ const StatModal = ({ onClose, filter, slug, title }) => {
 
         {/* ── Footer ── */}
         {!loading && items.length > 0 && (
-          <div style={{ padding: '10px 22px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', textAlign: 'center' }}>
-            <span style={{ fontSize: 11, color: '#1e293b', fontWeight: 500 }}>
+          <div style={{ padding: '10px 20px', borderTop: '1px solid var(--border)', background: 'var(--card-gradient-alt)', textAlign: 'center' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>
               Showing all {items.length} record{items.length !== 1 ? 's' : ''}
             </span>
           </div>
         )}
       </div>
-    </div>
   );
 };
 
@@ -556,6 +548,9 @@ export default function BADashboard() {
         )}
       </div>
 
+      {/* ── Stat Detail Panel (inline below cards) ──── */}
+      {modal && <StatModal slug={slug} filter={modal.filter} title={modal.title} onClose={() => setModal(null)} />}
+
       {/* ── Charts Row ─────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
 
@@ -707,9 +702,6 @@ export default function BADashboard() {
           </div>
         </div>
       </div>
-
-      {/* ── Stat Detail Modal ─────────────────────── */}
-      {modal && <StatModal slug={slug} filter={modal.filter} title={modal.title} onClose={() => setModal(null)} />}
 
       <style>{`
         @keyframes pulse     { 0%,100%{opacity:0.4} 50%{opacity:0.15} }
