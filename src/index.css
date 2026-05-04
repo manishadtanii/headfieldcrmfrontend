@@ -410,6 +410,9 @@ input, select, textarea { font-family: inherit; }
 .sidebar-footer {
   padding: 12px;
   border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .user-card {
@@ -417,8 +420,17 @@ input, select, textarea { font-family: inherit; }
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-elevated);
+  border-radius: 10px;
+  background: var(--card-gradient);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  transition: background 0.15s ease, border-color 0.15s ease;
+  overflow: hidden;
+}
+
+.user-card:hover {
+  border-color: var(--glass-border-hover);
 }
 
 .user-avatar {
@@ -428,11 +440,30 @@ input, select, textarea { font-family: inherit; }
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 700;
   color: white; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.user-info { flex: 1; min-width: 0; }
-.user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); truncate: clip; }
-.user-role { font-size: 11px; color: var(--text-muted); }
+.user-info { flex: 1; min-width: 0; overflow: hidden; }
+.user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.user-card .btn-icon {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.user-card .btn-icon:hover {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border-color: rgba(239,68,68,0.25);
+}
 
 /* ═══════════════════════════════════════
    TOP HEADER
@@ -1289,10 +1320,16 @@ input, select, textarea { font-family: inherit; }
   display: none;
 }
 
-/* Collapsed user card — center avatar only */
+/* Collapsed user card — stack avatar + logout vertically */
 .sidebar.is-collapsed .user-card {
-  justify-content: center;
-  padding: 8px;
+  flex-direction: column;
+  padding: 10px 6px;
+  gap: 8px;
+  align-items: center;
+}
+
+.sidebar.is-collapsed .user-card .btn-icon {
+  width: 28px; height: 28px;
 }
 
 /* Main content margin when sidebar is collapsed */
