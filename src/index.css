@@ -223,6 +223,54 @@ body::after {
   animation-delay: -20s;
 }
 
+/* ── Light theme: tone down aurora blobs ────────────── */
+[data-theme="light"] body::before {
+  background: radial-gradient(circle, rgba(99,102,241,0.10) 0%, rgba(139,92,246,0.06) 50%, transparent 70%);
+}
+[data-theme="light"] body::after {
+  background: radial-gradient(circle, rgba(6,182,212,0.08) 0%, rgba(16,185,129,0.04) 50%, transparent 70%);
+}
+[data-theme="light"] .aurora-orb {
+  background: radial-gradient(circle, rgba(168,85,247,0.06) 0%, rgba(236,72,153,0.03) 50%, transparent 70%);
+}
+
+/* ═══════════════════════════════════════════════
+   ANIMATION UTILITIES — GPU-only (transform + opacity)
+═══════════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.anim-fade-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.anim-delay-1 { animation-delay: 0.06s; }
+.anim-delay-2 { animation-delay: 0.12s; }
+.anim-delay-3 { animation-delay: 0.18s; }
+.anim-delay-4 { animation-delay: 0.24s; }
+.anim-delay-5 { animation-delay: 0.30s; }
+
+/* ═══════════════════════════════════════════════
+   SKELETON SHIMMER — shimmer sweep, no JS
+═══════════════════════════════════════════════ */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-box {
+  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-hover) 37%, var(--bg-elevated) 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
 /* No wildcard transition — targeted transitions are already on each component */
 /* This avoids performance issues and animation conflicts */
 
@@ -249,7 +297,7 @@ input, select, textarea { font-family: inherit; }
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+
 
 /* ═══════════════════════════════════════
    LAYOUT
@@ -1020,10 +1068,13 @@ input, select, textarea { font-family: inherit; }
    Components that need tuning on Pearl bg
 ═══════════════════════════════════════ */
 
-/* Sidebar gets a stronger right border shadow on light */
+/* Sidebar — clean frosted white glass on light */
 [data-theme="light"] .sidebar {
-  border-right: 1px solid var(--border);
-  box-shadow: 2px 0 12px rgba(28,24,18,0.06);
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(99,102,241,0.10);
+  box-shadow: 1px 0 20px rgba(99,102,241,0.06);
 }
 
 /* Nav active item — stronger indigo feel on white */
@@ -1143,15 +1194,6 @@ input, select, textarea { font-family: inherit; }
 ═══════════════════════════════════════════════ */
 
 /* ── Core keyframes ────────────────────────────────────── */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 @keyframes fadeIn {
   from { opacity: 0; }
