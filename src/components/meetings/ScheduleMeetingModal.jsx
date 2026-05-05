@@ -3,7 +3,8 @@ import {
   RiCloseLine, RiCalendarEventLine, RiVideoLine,
   RiAddLine, RiDeleteBinLine, RiUserLine, RiTimeLine,
 } from 'react-icons/ri';
-import { meetingAPI, baAPI } from '../../api';
+import { meetingAPI, baAPI, empAPI } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -40,6 +41,9 @@ const defaultStart = () => {
 };
 
 export default function ScheduleMeetingModal({ slug, onClose, onCreated }) {
+  const { user } = useAuth();
+  const isEmployee = user?.role === 'employee';
+
   const [form, setForm] = useState({
     title:       '',
     description: '',
@@ -51,12 +55,16 @@ export default function ScheduleMeetingModal({ slug, onClose, onCreated }) {
   const [submitting, setSubmitting] = useState(false);
   const [leads, setLeads] = useState([]);
 
-  // Load leads for dropdown
+  // Load leads for dropdown — role-aware
   useEffect(() => {
-    baAPI.getLeads(slug, { limit: 100 })
+    const fetchLeads = isEmployee
+      ? empAPI.getMyLeads(slug, { limit: 100 })
+      : baAPI.getLeads(slug, { limit: 100 });
+
+    fetchLeads
       .then((r) => setLeads(r.data.data || []))
-      .catch(() => {});
-  }, [slug]);
+      .catch(() => {}); // silently fail — leads dropdown is optional
+  }, [slug, isEmployee]);
 
   const endTime = addMinutes(form.startTime, form.duration);
 
