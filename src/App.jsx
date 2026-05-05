@@ -30,6 +30,7 @@ import BASettings from './pages/business-admin/Settings';
 import BARecycleBin from './pages/business-admin/RecycleBin';
 import BAReminders from './pages/business-admin/Reminders';
 import BAAutomation from './pages/business-admin/AutomationTools';
+import BAMeetings  from './pages/business-admin/Meetings';
 
 // Employee
 
@@ -39,6 +40,7 @@ import EmpMyLeads from './pages/employee/MyLeads';
 import EmpProfile from './pages/employee/Profile';
 import LeadDetail from './pages/employee/LeadDetail';
 import EmpReminders from './pages/employee/Reminders';
+import EmpMeetings  from './pages/employee/Meetings';
 
 // ── Protected Route ─────────────────────────────────────────────
 const ProtectedRoute = ({ children, allowedRoles, slugParam }) => {
@@ -125,6 +127,7 @@ const AppRoutes = () => {
         <Route path="leads" element={<BALeads />} />
         <Route path="lead-overview" element={<BALeadOverview />} />
         <Route path="reminders" element={<BAReminders />} />
+        <Route path="meetings"  element={<BAMeetings />} />
         <Route path="automation" element={<BAAutomation />} />
         <Route path="recycle-bin" element={<BARecycleBin />} />
         <Route path="settings" element={<BASettings />} />
@@ -144,6 +147,7 @@ const AppRoutes = () => {
         <Route path="my-leads" element={<EmpMyLeads />} />
         <Route path="my-leads/:id" element={<LeadDetail />} />
         <Route path="reminders" element={<EmpReminders />} />
+        <Route path="meetings"  element={<EmpMeetings />} />
         <Route path="profile" element={<EmpProfile />} />
       </Route>
 

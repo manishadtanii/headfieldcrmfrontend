@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, BarChart2, Code2, LogOut, Trash2, Bell, Zap, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, BarChart2, Code2, LogOut, Trash2, Bell, Zap, PanelLeftClose, PanelLeftOpen, CalendarDays } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { baAPI } from '../api';
 import NotificationBell from '../components/NotificationBell';
@@ -21,6 +21,7 @@ export default function BusinessLayout() {
     { to: `/${slug}/leads`,         icon: ClipboardList,   label: 'Leads'            },
     { to: `/${slug}/lead-overview`, icon: BarChart2,       label: 'Lead Overview'    },
     { to: `/${slug}/reminders`,     icon: Bell,            label: 'Reminders'        },
+    { to: `/${slug}/meetings`,      icon: CalendarDays,    label: 'Meetings'         },
     { to: `/${slug}/automation`,    icon: Zap,             label: 'Automation Tools' },
     { to: `/${slug}/recycle-bin`,   icon: Trash2,          label: 'Recycle Bin'      },
     { to: `/${slug}/settings`,      icon: Code2,           label: 'Dev Zone'         },

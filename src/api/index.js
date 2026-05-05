@@ -138,3 +138,18 @@ export const empAPI = {
   markAllRead: (slug) => api.patch(`/b/${slug}/notifications/read-all`),
   markOneRead: (slug, id) => api.patch(`/b/${slug}/notifications/${id}/read`),
 };
+
+// ── Meetings API — /api/:slug/meetings ───────────────────────────
+// Shared between BA and Employee (backend filters by role)
+export const meetingAPI = {
+  // Google OAuth
+  getAuthUrl:    (slug) => api.get(`/${slug}/meetings/google/auth`),
+  getStatus:     (slug) => api.get(`/${slug}/meetings/google/status`),
+  disconnect:    (slug) => api.delete(`/${slug}/meetings/google/disconnect`),
+
+  // CRUD
+  getAll:        (slug, params) => api.get(`/${slug}/meetings`, { params }),
+  getOne:        (slug, id)     => api.get(`/${slug}/meetings/${id}`),
+  create:        (slug, data)   => api.post(`/${slug}/meetings`, data),
+  updateStatus:  (slug, id, status) => api.patch(`/${slug}/meetings/${id}/status`, { status }),
+};

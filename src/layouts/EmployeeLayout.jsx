@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, User, LogOut, Bell, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, User, LogOut, Bell, PanelLeftClose, PanelLeftOpen, CalendarDays } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { empAPI } from '../api';
 import NotificationBell from '../components/NotificationBell';
@@ -20,6 +20,7 @@ export default function EmployeeLayout() {
     { to: `/${slug}/emp/dashboard`, icon: LayoutDashboard, label: 'Dashboard'  },
     { to: `/${slug}/emp/my-leads`,  icon: ClipboardList,   label: 'My Leads'   },
     { to: `/${slug}/emp/reminders`, icon: Bell,            label: 'Reminders'  },
+    { to: `/${slug}/emp/meetings`,  icon: CalendarDays,    label: 'Meetings'   },
     { to: `/${slug}/emp/profile`,   icon: User,            label: 'My Profile' },
   ];
 
