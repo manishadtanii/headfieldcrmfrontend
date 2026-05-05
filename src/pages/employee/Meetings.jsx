@@ -245,13 +245,31 @@ export default function EmpMeetings() {
 
       {!connected && <GoogleBanner slug={slug} />}
       {connected && (
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '6px 14px', borderRadius: 20,
-          background: '#10b98115', border: '1px solid #10b98140',
-          color: '#10b981', fontSize: 13, fontWeight: 700, marginBottom: 20,
-        }}>
-          <RiCheckLine size={14} /> Google Calendar Connected
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '6px 14px', borderRadius: 20,
+            background: '#10b98115', border: '1px solid #10b98140',
+            color: '#10b981', fontSize: 13, fontWeight: 700,
+          }}>
+            <RiCheckLine size={14} /> Google Calendar Connected
+          </div>
+          <button
+            onClick={async () => {
+              try {
+                await meetingAPI.disconnect(slug);
+                setConnected(false);
+                toast.success('Google Calendar disconnected');
+              } catch { toast.error('Could not disconnect'); }
+            }}
+            style={{
+              padding: '5px 14px', borderRadius: 20, cursor: 'pointer',
+              background: '#ef444415', border: '1px solid #ef444440',
+              color: '#ef4444', fontSize: 12, fontWeight: 700,
+            }}
+          >
+            Disconnect
+          </button>
         </div>
       )}
 
