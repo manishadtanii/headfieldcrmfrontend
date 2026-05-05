@@ -155,9 +155,24 @@ function MeetingCard({ meeting, onStatusUpdate }) {
           </div>
         )}
         {meeting.createdBy?.name && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-muted)' }}>
-            <RiTeamLine size={14} />
-            {meeting.createdBy.name}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '3px 10px 3px 4px', borderRadius: 20,
+              background: '#818cf815', border: '1px solid #818cf840',
+            }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: '50%',
+                background: 'linear-gradient(135deg,#818cf8,#6366f1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 10, fontWeight: 900, color: '#fff', flexShrink: 0,
+              }}>
+                {meeting.createdBy.name[0]?.toUpperCase()}
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#818cf8' }}>
+                {meeting.createdBy.name}
+              </span>
+            </div>
           </div>
         )}
       </div>
